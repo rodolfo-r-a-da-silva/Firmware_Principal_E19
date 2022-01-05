@@ -1,0 +1,2 @@
+principal_datalogger.c:10:6:Datalogger_Init	4	static
+principal_datalogger.c:15:6:Datalogger_Save_Buffer	48	dynamic

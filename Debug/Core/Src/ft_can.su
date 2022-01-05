@@ -1,0 +1,4 @@
+ft_can.c:10:19:FT_CAN_FilterConfig	72	static
+ft_can.c:31:13:FT_CAN_ProcessData	24	static
+ft_can.c:510:13:FT_CAN_ProcessCustomData	16	static
+ft_can.c:518:6:FT_CAN_ReceiveData	48	dynamic
