@@ -1,0 +1,2 @@
+principal_rtc.c:10:6:Principal_RTC_Init	16	static
+principal_rtc.c:31:6:Principal_RTC_Get_Date	16	static

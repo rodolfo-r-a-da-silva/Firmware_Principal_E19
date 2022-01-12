@@ -41,6 +41,13 @@ Core/Src/principal_datalogger.o: ../Core/Src/principal_datalogger.c \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
+ ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
+ ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
+ ../Core/Inc/main.h ../FATFS/Target/bsp_driver_sd.h \
+ ../FATFS/Target/fatfs_platform.h \
+ ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h \
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/sd_diskio.h \
  ../Core/Inc/ft_can.h
 
 ../Core/Inc/principal.h:
@@ -128,5 +135,27 @@ Core/Src/principal_datalogger.o: ../Core/Src/principal_datalogger.c \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
+
+../FATFS/App/fatfs.h:
+
+../Middlewares/Third_Party/FatFs/src/ff.h:
+
+../Middlewares/Third_Party/FatFs/src/integer.h:
+
+../FATFS/Target/ffconf.h:
+
+../Core/Inc/main.h:
+
+../FATFS/Target/bsp_driver_sd.h:
+
+../FATFS/Target/fatfs_platform.h:
+
+../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
+
+../Middlewares/Third_Party/FatFs/src/diskio.h:
+
+../Middlewares/Third_Party/FatFs/src/ff.h:
+
+../FATFS/Target/sd_diskio.h:
 
 ../Core/Inc/ft_can.h:

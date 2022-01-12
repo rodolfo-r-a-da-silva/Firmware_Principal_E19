@@ -3,6 +3,7 @@
 "./Core/Src/principal_can.o"
 "./Core/Src/principal_datalogger.o"
 "./Core/Src/principal_interrupts.o"
+"./Core/Src/principal_rtc.o"
 "./Core/Src/stm32f4xx_hal_msp.o"
 "./Core/Src/stm32f4xx_it.o"
 "./Core/Src/syscalls.o"

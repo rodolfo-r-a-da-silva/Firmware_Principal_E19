@@ -1,4 +1,4 @@
-Core/Src/principal_can.o: ../Core/Src/principal_can.c \
+Core/Src/principal_rtc.o: ../Core/Src/principal_rtc.c \
  ../Core/Inc/principal.h ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \

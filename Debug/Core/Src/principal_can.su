@@ -1,7 +1,7 @@
 principal_can.c:10:13:Msg_0	24	static
-principal_can.c:38:13:Msg_1	24	static
-principal_can.c:66:13:Msg_2	24	static
-principal_can.c:93:13:Msg_Verify	24	static
-principal_can.c:109:13:Msg_PDM	4	static
-principal_can.c:114:13:Msg_ECU	4	static
-principal_can.c:119:6:Principal_Transmit_Msg	16	static
+principal_can.c:41:13:Msg_1	24	static
+principal_can.c:72:13:Msg_2	24	static
+principal_can.c:102:13:Msg_Verify	24	static
+principal_can.c:120:13:Msg_PDM	16	static
+principal_can.c:125:13:Msg_ECU	16	static
+principal_can.c:130:6:Principal_Transmit_Msg	16	static

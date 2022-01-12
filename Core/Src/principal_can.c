@@ -24,6 +24,9 @@ static void Msg_0(CAN_HandleTypeDef* hcan)
 	CAN_Tx_Data[6] = ADC_Buffer[3] >> 8;
 	CAN_Tx_Data[7] = ADC_Buffer[3] & 0xff;
 
+	if(Flag_Datalogger == 1)
+		Principal_Datalogger_Save_Buffer(CAN_Tx_Header.StdId, CAN_Tx_Header.DLC, CAN_Tx_Data, &File_Struct);
+
 	if(Acc_CAN[0] >= Per_CAN[0])
 	{
 		Acc_CAN[0] = 0;
@@ -51,6 +54,9 @@ static void Msg_1(CAN_HandleTypeDef* hcan)
 	CAN_Tx_Data[5] = ADC_Buffer[6] & 0xff;
 	CAN_Tx_Data[6] = ADC_Buffer[7] >> 8;
 	CAN_Tx_Data[7] = ADC_Buffer[7] & 0xff;
+
+	if(Flag_Datalogger == 1)
+		Principal_Datalogger_Save_Buffer(CAN_Tx_Header.StdId, CAN_Tx_Header.DLC, CAN_Tx_Data, &File_Struct);
 
 	if(Acc_CAN[1] >= Per_CAN[1])
 	{
@@ -80,6 +86,9 @@ static void Msg_2(CAN_HandleTypeDef* hcan)
 	CAN_Tx_Data[6] = ADC_Buffer[11] >> 8;
 	CAN_Tx_Data[7] = ADC_Buffer[11] & 0xff;
 
+	if(Flag_Datalogger == 1)
+		Principal_Datalogger_Save_Buffer(CAN_Tx_Header.StdId, CAN_Tx_Header.DLC, CAN_Tx_Data, &File_Struct);
+
 	if(Acc_CAN[2] >= Per_CAN[2])
 	{
 		Acc_CAN[2] = 0;
@@ -98,6 +107,8 @@ static void Msg_Verify(CAN_HandleTypeDef* hcan)
 	CAN_Tx_Header.RTR = CAN_RTR_DATA;
 	CAN_Tx_Header.TransmitGlobalTime = DISABLE;
 
+	if(Flag_Datalogger == 1)
+		Principal_Datalogger_Save_Buffer(CAN_Tx_Header.StdId, CAN_Tx_Header.DLC, CAN_Tx_Data, &File_Struct);
 
 	if(HAL_CAN_AddTxMessage(hcan, &CAN_Tx_Header, CAN_Tx_Data, &pTxMailbox) == HAL_OK)
 		Verify_CAN[0] = 1;
@@ -108,12 +119,12 @@ static void Msg_Verify(CAN_HandleTypeDef* hcan)
 
 static void Msg_PDM()
 {
-
+	uint8_t buffer[8];
 }
 
 static void Msg_ECU()
 {
-
+	uint8_t buffer[8];
 }
 
 void Principal_Transmit_Msg(CAN_HandleTypeDef* hcan, uint8_t msg_number)
