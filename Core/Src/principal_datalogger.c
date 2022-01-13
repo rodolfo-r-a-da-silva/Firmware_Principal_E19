@@ -59,7 +59,7 @@ FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct)
 void Principal_Datalogger_Save_Buffer(uint32_t Data_ID, uint8_t Data_Length, uint8_t* Data_Buffer, FIL* file_struct)
 {
 	uint8_t buffer[5 + Data_Length];
-	BYTE byte;
+	UINT byte;
 	FRESULT verify[2];
 
 	buffer[0] = 'D';
@@ -83,9 +83,11 @@ void Principal_Datalogger_Save_Buffer(uint32_t Data_ID, uint8_t Data_Length, uin
 
 		verify[1] = f_sync(file_struct);
 
-		if((verify[0] == FR_OK) && (verify[1] == FR_OK))
+		if((verify[0] == FR_OK) && (verify[1] == FR_OK) && (Datalogger_Buffer_Position == byte))
 			Verify_Datalogger = 1;
 		else
 			Verify_Datalogger = 0;
+
+		Datalogger_Buffer_Position = 0;
 	}
 }

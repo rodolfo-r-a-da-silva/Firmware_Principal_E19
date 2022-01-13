@@ -2,6 +2,6 @@ principal_can.c:10:13:Msg_0	24	static
 principal_can.c:41:13:Msg_1	24	static
 principal_can.c:72:13:Msg_2	24	static
 principal_can.c:102:13:Msg_Verify	24	static
-principal_can.c:120:13:Msg_PDM	16	static
-principal_can.c:125:13:Msg_ECU	16	static
-principal_can.c:130:6:Principal_Transmit_Msg	16	static
+principal_can.c:120:13:Msg_PDM	24	static
+principal_can.c:236:13:Msg_ECU	24	static
+principal_can.c:288:6:Principal_Transmit_Msg	16	static

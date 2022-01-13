@@ -48,7 +48,7 @@ Core/Src/principal_can.o: ../Core/Src/principal_can.c \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
  ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/sd_diskio.h \
- ../Core/Inc/ft_can.h
+ ../Core/Inc/ft_can.h ../Core/Inc/pdm_can.h
 
 ../Core/Inc/principal.h:
 
@@ -159,3 +159,5 @@ Core/Src/principal_can.o: ../Core/Src/principal_can.c \
 ../FATFS/Target/sd_diskio.h:
 
 ../Core/Inc/ft_can.h:
+
+../Core/Inc/pdm_can.h:

@@ -18,9 +18,9 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			Principal_Datalogger_Save_Buffer(CAN_Rx_Header.StdId, CAN_Rx_Header.DLC, CAN_Rx_Data, &File_Struct);
 		}
 
-		else if((CAN_Rx_Header.ExtId & 0x1FFFF000) == 0x1E35C000)
+		else if(((CAN_Rx_Header.ExtId & 0x1FFFF000) == 0x1E35C000) && (CAN_Rx_Header.IDE == CAN_ID_EXT))
 		{
-
+			PDM_CAN_Process_Data(CAN_Rx_Header.ExtId, CAN_Rx_Header.DLC, CAN_Rx_Data, &PDM_Readings);
 		}
 
 		else

@@ -12,10 +12,13 @@
 #include "fatfs.h"
 #include "ff.h"
 #include "ft_can.h"
+#include "pdm_can.h"
 
 /*BEGIN DEFINES*/
 //CAN
-#define FIRST_ID 1
+#define FIRST_ID		1
+#define ECU_FIRST_ID	26
+#define PDM_FIRST_ID	50
 
 //DATALOGGER
 #define DATALOGGER_BUFFER_SIZE	4096
@@ -51,6 +54,7 @@ uint8_t Datalogger_Buffer[DATALOGGER_BUFFER_SIZE];
 uint16_t Datalogger_Buffer_Position;
 uint16_t ADC_Buffer[12];
 FT_Data ECU_Data;
+PDM_Data PDM_Readings;
 DIR Dir_Struct;
 FATFS Fatfs_Struct;
 FIL File_Struct;

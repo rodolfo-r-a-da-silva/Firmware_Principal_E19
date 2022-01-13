@@ -1,5 +1,6 @@
 "./Core/Src/ft_can.o"
 "./Core/Src/main.o"
+"./Core/Src/pdm_can.o"
 "./Core/Src/principal_can.o"
 "./Core/Src/principal_datalogger.o"
 "./Core/Src/principal_interrupts.o"

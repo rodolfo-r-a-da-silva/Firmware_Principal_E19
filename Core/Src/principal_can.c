@@ -119,12 +119,170 @@ static void Msg_Verify(CAN_HandleTypeDef* hcan)
 
 static void Msg_PDM()
 {
-	uint8_t buffer[8];
+	uint8_t id = 0, length = 0, buffer[8];
+
+	if(Flag_Datalogger == 0)
+		return;
+
+	id = PDM_FIRST_ID;
+	length = 8;
+
+	buffer[0] = PDM_Readings.Current_Buffer[0] << 8;
+	buffer[1] = PDM_Readings.Current_Buffer[0] & 0xff;
+	buffer[2] = PDM_Readings.Current_Buffer[1] << 8;
+	buffer[3] = PDM_Readings.Current_Buffer[1] & 0xff;
+	buffer[4] = PDM_Readings.Current_Buffer[2] << 8;
+	buffer[5] = PDM_Readings.Current_Buffer[2] & 0xff;
+	buffer[6] = PDM_Readings.Current_Buffer[3] << 8;
+	buffer[7] = PDM_Readings.Current_Buffer[3] & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = PDM_FIRST_ID + 1;
+	length = 8;
+
+	buffer[0] = PDM_Readings.Current_Buffer[4] << 8;
+	buffer[1] = PDM_Readings.Current_Buffer[4] & 0xff;
+	buffer[2] = PDM_Readings.Current_Buffer[5] << 8;
+	buffer[3] = PDM_Readings.Current_Buffer[5] & 0xff;
+	buffer[4] = PDM_Readings.Current_Buffer[6] << 8;
+	buffer[5] = PDM_Readings.Current_Buffer[6] & 0xff;
+	buffer[6] = PDM_Readings.Current_Buffer[7] << 8;
+	buffer[7] = PDM_Readings.Current_Buffer[7] & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = PDM_FIRST_ID + 2;
+	length = 8;
+
+	buffer[0] = PDM_Readings.Current_Buffer[8] << 8;
+	buffer[1] = PDM_Readings.Current_Buffer[8] & 0xff;
+	buffer[2] = PDM_Readings.Current_Buffer[9] << 8;
+	buffer[3] = PDM_Readings.Current_Buffer[9] & 0xff;
+	buffer[4] = PDM_Readings.Current_Buffer[10] << 8;
+	buffer[5] = PDM_Readings.Current_Buffer[10] & 0xff;
+	buffer[6] = PDM_Readings.Current_Buffer[11] << 8;
+	buffer[7] = PDM_Readings.Current_Buffer[11] & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = PDM_FIRST_ID + 3;
+	length = 8;
+
+	buffer[0] = PDM_Readings.Current_Buffer[12] << 8;
+	buffer[1] = PDM_Readings.Current_Buffer[12] & 0xff;
+	buffer[2] = PDM_Readings.Current_Buffer[13] << 8;
+	buffer[3] = PDM_Readings.Current_Buffer[13] & 0xff;
+	buffer[4] = PDM_Readings.Current_Buffer[14] << 8;
+	buffer[5] = PDM_Readings.Current_Buffer[14] & 0xff;
+	buffer[6] = PDM_Readings.Current_Buffer[15] << 8;
+	buffer[7] = PDM_Readings.Current_Buffer[15] & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = PDM_FIRST_ID + 4;
+	length = 8;
+
+	buffer[0] = PDM_Readings.Tempetature_Buffer[0] << 8;
+	buffer[1] = PDM_Readings.Tempetature_Buffer[0] & 0xff;
+	buffer[2] = PDM_Readings.Tempetature_Buffer[1] << 8;
+	buffer[3] = PDM_Readings.Tempetature_Buffer[1] & 0xff;
+	buffer[4] = PDM_Readings.Tempetature_Buffer[2] << 8;
+	buffer[5] = PDM_Readings.Tempetature_Buffer[2] & 0xff;
+	buffer[6] = PDM_Readings.Tempetature_Buffer[3] << 8;
+	buffer[7] = PDM_Readings.Tempetature_Buffer[3] & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = PDM_FIRST_ID + 5;
+	length = 8;
+
+	buffer[0] = PDM_Readings.Tempetature_Buffer[4] << 8;
+	buffer[1] = PDM_Readings.Tempetature_Buffer[4] & 0xff;
+	buffer[2] = PDM_Readings.Tempetature_Buffer[5] << 8;
+	buffer[3] = PDM_Readings.Tempetature_Buffer[5] & 0xff;
+	buffer[4] = PDM_Readings.Tempetature_Buffer[6] << 8;
+	buffer[5] = PDM_Readings.Tempetature_Buffer[6] & 0xff;
+	buffer[6] = PDM_Readings.Tempetature_Buffer[7] << 8;
+	buffer[7] = PDM_Readings.Tempetature_Buffer[7] & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = PDM_FIRST_ID + 6;
+	length = 8;
+
+	buffer[0] = PDM_Readings.Duty_Cycle_Buffer[0] << 8;
+	buffer[1] = PDM_Readings.Duty_Cycle_Buffer[0] & 0xff;
+	buffer[2] = PDM_Readings.Duty_Cycle_Buffer[1] << 8;
+	buffer[3] = PDM_Readings.Duty_Cycle_Buffer[1] & 0xff;
+	buffer[4] = PDM_Readings.Duty_Cycle_Buffer[2] << 8;
+	buffer[5] = PDM_Readings.Duty_Cycle_Buffer[2] & 0xff;
+	buffer[6] = PDM_Readings.Duty_Cycle_Buffer[3] << 8;
+	buffer[7] = PDM_Readings.Duty_Cycle_Buffer[3] & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = PDM_FIRST_ID + 7;
+	length = 4;
+
+	buffer[0] = PDM_Readings.Input_Voltage << 8;
+	buffer[1] = PDM_Readings.Input_Voltage & 0xff;
+	buffer[2] = PDM_Readings.Output_Verify << 8;
+	buffer[3] = PDM_Readings.Output_Verify & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
 }
 
 static void Msg_ECU()
 {
-	uint8_t buffer[8];
+	uint8_t id = 0, length = 0, buffer[8];
+
+	if(Flag_Datalogger == 0)
+		return;
+
+	id = ECU_FIRST_ID;
+	length = 8;
+
+	buffer[0] = ECU_Data.rpm >> 8;
+	buffer[1] = ECU_Data.rpm & 0xff;
+	buffer[2] = ECU_Data.tps / 10;
+	buffer[3] = ECU_Data.iat / 10;
+	buffer[4] = ECU_Data.battery_voltage >> 8;
+	buffer[5] = ECU_Data.battery_voltage & 0xff;
+	buffer[6] = ECU_Data.ect >> 8;
+	buffer[7] = ECU_Data.ect & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = ECU_FIRST_ID + 1;
+	length = 8;
+
+	buffer[0] = ECU_Data.map >> 8;
+	buffer[1] = ECU_Data.map & 0xff;
+	buffer[2] = ECU_Data.fuel_pressure >> 8;
+	buffer[3] = ECU_Data.fuel_pressure & 0xff;
+	buffer[4] = ECU_Data.oil_pressure >> 8;
+	buffer[5] = ECU_Data.oil_pressure & 0xff;
+	buffer[6] = ECU_Data.lambda >> 8;
+	buffer[7] = ECU_Data.lambda & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	id = ECU_FIRST_ID + 2;
+	length = 8;
+
+	buffer[0] = ECU_Data.wheel_speed_fl;
+	buffer[1] = ECU_Data.wheel_speed_fr;
+	buffer[2] = ECU_Data.wheel_speed_rl;
+	buffer[3] = ECU_Data.wheel_speed_rr;
+	buffer[4] = ECU_Data.oil_temperature >> 8;
+	buffer[5] = ECU_Data.oil_temperature & 0xff;
+	buffer[6] = ECU_Data.coolant_pressure >> 8;
+	buffer[7] = ECU_Data.coolant_pressure & 0xff;
+
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+
+	return;
 }
 
 void Principal_Transmit_Msg(CAN_HandleTypeDef* hcan, uint8_t msg_number)
