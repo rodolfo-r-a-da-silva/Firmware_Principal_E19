@@ -129,47 +129,64 @@ int main(void)
   MX_CAN1_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  Principal_RTC_Calibrate(&Date, &Time);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(Acc_Msg[0] >= Per_Msg[0])
+	  //Checks if data is being saved and starts saving if conditions are met
+	  if(Flag_Datalogger == 0)
+		  Principal_Datalogger_Start(&Date, &Time, Dir_String, Log_String, &Dir_Struct, &File_Struct);
+
+	  //Analog inputs 1-4 CAN message
+	  if((Acc_Msg[Analog_1_4] >= Per_Msg[Analog_1_4]) && (Per_Msg[Analog_1_4] != 0))
 	  {
-		  Acc_Msg[0] = 0;
-		  Principal_Transmit_Msg(&hcan1, 0);
+		  Acc_Msg[Analog_1_4] -= Per_Msg[Analog_1_4];
+		  Principal_Transmit_Msg(&hcan1, Analog_1_4);
 	  }
 
-	  if(Acc_Msg[1] >= Per_Msg[1])
+	  //Analog inputs 5-8 CAN message
+	  if((Acc_Msg[Analog_5_8] >= Per_Msg[Analog_5_8]) && (Per_Msg[Analog_5_8] != 0))
 	  {
-		  Acc_Msg[1] = 0;
-		  Principal_Transmit_Msg(&hcan1, 1);
+		  Acc_Msg[Analog_5_8] -= Per_Msg[Analog_5_8];
+		  Principal_Transmit_Msg(&hcan1, Analog_5_8);
 	  }
 
-	  if(Acc_Msg[2] >= Per_Msg[2])
+	  //Analog inputs 9-12 CAN message
+	  if((Acc_Msg[Analog_9_12] >= Per_Msg[Analog_9_12]) && (Per_Msg[Analog_9_12] != 0))
 	  {
-		  Acc_Msg[2] = 0;
-		  Principal_Transmit_Msg(&hcan1, 2);
+		  Acc_Msg[Analog_9_12] -= Per_Msg[Analog_9_12];
+		  Principal_Transmit_Msg(&hcan1, Analog_9_12);
 	  }
 
-	  if(Acc_Msg[3] >= Per_Msg[3])
+	  //RTC, both date and time
+	  if((Acc_Msg[RTC_Msg] >= Per_Msg[RTC_Msg]) && (Per_Msg[RTC_Msg] != 0))
 	  {
-		  Acc_Msg[3] = 0;
-		  Principal_Transmit_Msg(&hcan1, 3);
+		  Acc_Msg[RTC_Msg] -= Per_Msg[RTC_Msg];
+		  Principal_Transmit_Msg(&hcan1, RTC_Msg);
 	  }
 
-	  if(Acc_Msg[4] >= Per_Msg[4])
+	  //Inputs and datalogger verify CAN message
+	  if((Acc_Msg[Verify_Msg] >= Per_Msg[Verify_Msg]) && (Per_Msg[Verify_Msg] != 0))
 	  {
-		  Acc_Msg[4] = 0;
-		  Principal_Transmit_Msg(&hcan1, 4);
+		  Acc_Msg[Verify_Msg] -= Per_Msg[Verify_Msg];
+		  Principal_Transmit_Msg(&hcan1, Verify_Msg);
 	  }
 
-	  if(Acc_Msg[5] >= Per_Msg[5])
+	  //ECU saved data (no transmission)
+	  if((Acc_Msg[ECU_Save] >= Per_Msg[ECU_Save]) && (Per_Msg[ECU_Save] != 0))
 	  {
-		  Acc_Msg[5] = 0;
-		  Principal_Transmit_Msg(&hcan1, 5);
+		  Acc_Msg[ECU_Save] -= Per_Msg[ECU_Save];
+		  Principal_Transmit_Msg(&hcan1, ECU_Save);
+	  }
+
+	  //PDM saved data (no transmission)
+	  if((Acc_Msg[PDM_Save] >= Per_Msg[PDM_Save]) && (Per_Msg[PDM_Save] != 0))
+	  {
+		  Acc_Msg[PDM_Save] -= Per_Msg[PDM_Save];
+		  Principal_Transmit_Msg(&hcan1, PDM_Save);
 	  }
     /* USER CODE END WHILE */
 

@@ -18,7 +18,7 @@ typedef struct{
 	uint16_t Tempetature_Buffer[9];
 }PDM_Data;
 
-HAL_StatusTypeDef PDM_CAN_Filter_Set(CAN_HandleTypeDef* hcan, uint32_t bank_position, uint32_t fifo_assignment);
+HAL_StatusTypeDef PDM_CAN_FilterConfig(CAN_HandleTypeDef* hcan, uint32_t bank_position, uint32_t fifo_assignment);
 
 void PDM_CAN_Process_Data(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, PDM_Data* data_struct);
 

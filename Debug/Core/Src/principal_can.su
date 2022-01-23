@@ -1,7 +1,10 @@
-principal_can.c:10:13:Msg_0	24	static
-principal_can.c:41:13:Msg_1	24	static
-principal_can.c:72:13:Msg_2	24	static
-principal_can.c:102:13:Msg_Verify	24	static
-principal_can.c:120:13:Msg_PDM	24	static
-principal_can.c:236:13:Msg_ECU	24	static
-principal_can.c:288:6:Principal_Transmit_Msg	16	static
+principal_can.c:10:13:Tx_Analog_1_4	24	static
+principal_can.c:43:13:Tx_Analog_5_8	24	static
+principal_can.c:76:13:Tx_Analog_9_12	24	static
+principal_can.c:109:13:Tx_RTC	24	static
+principal_can.c:140:13:Tx_Verify	24	static
+principal_can.c:175:13:Tx_Beacon	16	static
+principal_can.c:197:13:Save_PDM	24	static
+principal_can.c:313:13:Save_ECU	24	static
+principal_can.c:377:6:Principal_CAN_Start	64	static
+principal_can.c:402:6:Principal_Transmit_Msg	16	static

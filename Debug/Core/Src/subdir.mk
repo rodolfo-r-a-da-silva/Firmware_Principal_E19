@@ -9,6 +9,7 @@ C_SRCS += \
 ../Core/Src/main.c \
 ../Core/Src/pdm_can.c \
 ../Core/Src/principal_can.c \
+../Core/Src/principal_config.c \
 ../Core/Src/principal_datalogger.c \
 ../Core/Src/principal_interrupts.c \
 ../Core/Src/principal_rtc.c \
@@ -23,6 +24,7 @@ OBJS += \
 ./Core/Src/main.o \
 ./Core/Src/pdm_can.o \
 ./Core/Src/principal_can.o \
+./Core/Src/principal_config.o \
 ./Core/Src/principal_datalogger.o \
 ./Core/Src/principal_interrupts.o \
 ./Core/Src/principal_rtc.o \
@@ -37,6 +39,7 @@ C_DEPS += \
 ./Core/Src/main.d \
 ./Core/Src/pdm_can.d \
 ./Core/Src/principal_can.d \
+./Core/Src/principal_config.d \
 ./Core/Src/principal_datalogger.d \
 ./Core/Src/principal_interrupts.d \
 ./Core/Src/principal_rtc.d \
@@ -54,7 +57,7 @@ Core/Src/%.o: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/ft_can.d ./Core/Src/ft_can.o ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/pdm_can.d ./Core/Src/pdm_can.o ./Core/Src/principal_can.d ./Core/Src/principal_can.o ./Core/Src/principal_datalogger.d ./Core/Src/principal_datalogger.o ./Core/Src/principal_interrupts.d ./Core/Src/principal_interrupts.o ./Core/Src/principal_rtc.d ./Core/Src/principal_rtc.o ./Core/Src/stm32f4xx_hal_msp.d ./Core/Src/stm32f4xx_hal_msp.o ./Core/Src/stm32f4xx_it.d ./Core/Src/stm32f4xx_it.o ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/system_stm32f4xx.d ./Core/Src/system_stm32f4xx.o
+	-$(RM) ./Core/Src/ft_can.d ./Core/Src/ft_can.o ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/pdm_can.d ./Core/Src/pdm_can.o ./Core/Src/principal_can.d ./Core/Src/principal_can.o ./Core/Src/principal_config.d ./Core/Src/principal_config.o ./Core/Src/principal_datalogger.d ./Core/Src/principal_datalogger.o ./Core/Src/principal_interrupts.d ./Core/Src/principal_interrupts.o ./Core/Src/principal_rtc.d ./Core/Src/principal_rtc.o ./Core/Src/stm32f4xx_hal_msp.d ./Core/Src/stm32f4xx_hal_msp.o ./Core/Src/stm32f4xx_it.d ./Core/Src/stm32f4xx_it.o ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/system_stm32f4xx.d ./Core/Src/system_stm32f4xx.o
 
 .PHONY: clean-Core-2f-Src
 

@@ -1,4 +1,6 @@
 principal_datalogger.c:12:9:Principal_Datalogger_Init	24	static
 principal_datalogger.c:26:9:Principal_Datalogger_Start	56	static
-principal_datalogger.c:48:9:Principal_Datalogger_Finish	24	static
-principal_datalogger.c:59:6:Principal_Datalogger_Save_Buffer	56	dynamic
+principal_datalogger.c:63:9:Principal_Datalogger_Finish	24	static
+principal_datalogger.c:78:6:Principal_Datalogger_Save_Buffer	56	dynamic
+principal_datalogger.c:114:6:Principal_Datalogger_Button	32	static
+principal_datalogger.c:129:6:Principal_Beacon_Detect	8	static

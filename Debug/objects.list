@@ -2,6 +2,7 @@
 "./Core/Src/main.o"
 "./Core/Src/pdm_can.o"
 "./Core/Src/principal_can.o"
+"./Core/Src/principal_config.o"
 "./Core/Src/principal_datalogger.o"
 "./Core/Src/principal_interrupts.o"
 "./Core/Src/principal_rtc.o"

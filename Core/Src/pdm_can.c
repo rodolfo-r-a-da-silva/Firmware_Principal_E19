@@ -201,7 +201,7 @@ static void Process_Data(uint16_t id, uint16_t data, PDM_Data* data_struct)
 	return;
 }
 
-HAL_StatusTypeDef PDM_CAN_Filter_Set(CAN_HandleTypeDef* hcan, uint32_t bank_position, uint32_t fifo_assignment)
+HAL_StatusTypeDef PDM_CAN_FilterConfig(CAN_HandleTypeDef* hcan, uint32_t bank_position, uint32_t fifo_assignment)
 {
 	CAN_FilterTypeDef sFilterConfig;
 	uint32_t filterID = 0x1E35C000, filterMask = 0x1FFFF000;

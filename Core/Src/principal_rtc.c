@@ -7,14 +7,14 @@
 
 #include "principal.h"
 
-void Principal_RTC_Init(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime)
+void Principal_RTC_Calibrate(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime)
 {
-	sDate->Year = 0x22;
-	sDate->Month = 0x01;
-	sDate->Date = 0x11;
-	sTime->Hours = 0x00;
-	sTime->Minutes = 0x00;
-	sTime->Seconds = 0x00;
+	sDate->Year = 22;
+	sDate->Month = 01;
+	sDate->Date = 11;
+	sTime->Hours = 00;
+	sTime->Minutes = 00;
+	sTime->Seconds = 00;
 	sDate->WeekDay = RTC_WEEKDAY_MONDAY;
 
 	//Standard Configuration
@@ -22,14 +22,14 @@ void Principal_RTC_Init(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime)
 	sTime->StoreOperation = RTC_STOREOPERATION_RESET;
 	sTime->TimeFormat = RTC_HOURFORMAT_24;
 
-	HAL_RTC_SetDate(&hrtc, sDate, RTC_FORMAT_BCD);
-	HAL_RTC_SetTime(&hrtc, sTime, RTC_FORMAT_BCD);
+	HAL_RTC_SetDate(&hrtc, sDate, RTC_FORMAT_BIN);
+	HAL_RTC_SetTime(&hrtc, sTime, RTC_FORMAT_BIN);
 
 	return;
 }
 
 void Principal_RTC_Get_Date(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime)
 {
-	HAL_RTC_GetDate(&hrtc, sDate, RTC_FORMAT_BCD);
-	HAL_RTC_GetTime(&hrtc, sTime, RTC_FORMAT_BCD);
+	HAL_RTC_GetDate(&hrtc, sDate, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(&hrtc, sTime, RTC_FORMAT_BIN);
 }
