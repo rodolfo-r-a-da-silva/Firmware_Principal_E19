@@ -7,6 +7,32 @@
 
 #include "principal.h"
 
+static void Verify_Data()
+{
+	Verify = 0;
+
+	for(uint8_t i = 0; i < NBR_OF_CHANNELS; i++)
+		if(ADC_Buffer[i] > ADC_THRESHOLD)
+			Verify |= (1 << i);
+
+	HAL_GPIO_TogglePin(LED_OK);
+
+	if(Verify_Datalogger == 1)
+		HAL_GPIO_WritePin(LED_DATALOGGER, GPIO_PIN_SET);
+	else
+		HAL_GPIO_WritePin(LED_DATALOGGER, GPIO_PIN_RESET);
+
+	if((Verify_CAN & 1) == 1)
+		HAL_GPIO_TogglePin(LED_CAN_TX);
+	else
+		HAL_GPIO_WritePin(LED_CAN_TX, GPIO_PIN_RESET);
+
+	if((Verify_CAN & 2) == 2)
+		HAL_GPIO_TogglePin(LED_CAN_RX);
+	else
+		HAL_GPIO_WritePin(LED_CAN_RX, GPIO_PIN_RESET);
+}
+
 static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 {
 	TxHeader.IDE = CAN_ID_STD;
@@ -24,7 +50,7 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 	TxData[6] = ADC_Buffer[3] >> 8;
 	TxData[7] = ADC_Buffer[3] & 0xff;
 
-	if(Flag_Datalogger == 1)
+	if(Flag_Datalogger == DL_Save)
 		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
 
 	if((Acc_CAN[Analog_1_4] >= Per_CAN[Analog_1_4]) && (Per_CAN[Analog_1_4] != 0))
@@ -57,7 +83,7 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 	TxData[6] = ADC_Buffer[7] >> 8;
 	TxData[7] = ADC_Buffer[7] & 0xff;
 
-	if(Flag_Datalogger == 1)
+	if(Flag_Datalogger == DL_Save)
 		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
 
 	if((Acc_CAN[Analog_5_8] >= Per_CAN[Analog_5_8]) && (Per_CAN[Analog_5_8] != 0))
@@ -90,7 +116,7 @@ static void Tx_Analog_9_12(CAN_HandleTypeDef* hcan)
 	TxData[6] = ADC_Buffer[11] >> 8;
 	TxData[7] = ADC_Buffer[11] & 0xff;
 
-	if(Flag_Datalogger == 1)
+	if(Flag_Datalogger == DL_Save)
 		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
 
 	if((Acc_CAN[Analog_9_12] >= Per_CAN[Analog_9_12]) && (Per_CAN[Analog_9_12] != 0))
@@ -121,7 +147,7 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 	TxData[4] = Date.Month;
 	TxData[5] = Date.Year;
 
-	if(Flag_Datalogger == 1)
+	if(Flag_Datalogger == DL_Save)
 		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
 
 	if((Acc_CAN[RTC_Msg] >= Per_CAN[RTC_Msg]) && (Per_CAN[RTC_Msg] != 0))
@@ -145,22 +171,20 @@ static void Tx_Verify(CAN_HandleTypeDef* hcan)
 	TxHeader.StdId = FIRST_ID + 4;
 	TxHeader.DLC = 8;
 
-	TxData[0]  = Verify_Data[0];
-	TxData[0] |= Verify_Data[1] << 1;
-	TxData[0] |= Verify_Data[2] << 2;
-	TxData[0] |= Verify_Data[3] << 3;
-	TxData[0] |= Verify_Data[4] << 4;
-	TxData[0] |= Verify_Data[5] << 5;
-	TxData[0] |= Verify_Data[6] << 6;
-	TxData[0] |= Verify_Data[7] << 7;
+	Verify_Data();
 
-	TxData[1]  = Verify_Data[8];
-	TxData[1] |= Verify_Data[9] << 1;
-	TxData[1] |= Verify_Data[10] << 2;
-	TxData[1] |= Verify_Data[11] << 3;
+	TxData[0]  = Verify >> 8;
+	TxData[1]  = Verify & 0x0f;
 	TxData[1] |= Verify_Datalogger << 4;
 
-	if(Flag_Datalogger == 1)
+	__SAVE_FREQ(TxData[2], Per_Msg[Analog_1_4]);
+	__SAVE_FREQ(TxData[3], Per_Msg[Analog_5_8]);
+	__SAVE_FREQ(TxData[4], Per_Msg[Analog_9_12]);
+	__SAVE_FREQ(TxData[5], Per_Msg[RTC_Msg]);
+	__SAVE_FREQ(TxData[6], Per_Msg[PDM_Save]);
+	__SAVE_FREQ(TxData[7], Per_Msg[ECU_Save]);
+
+	if(Flag_Datalogger == DL_Save)
 		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
 
 	if(HAL_CAN_AddTxMessage(hcan, &TxHeader, TxData, &TxMailbox) == HAL_OK)
@@ -182,7 +206,7 @@ static void Tx_Beacon(CAN_HandleTypeDef* hcan)
 
 	TxData[0] = Lap_Number;
 
-	if(Flag_Datalogger == 1)
+	if(Flag_Datalogger == DL_Save)
 		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
 
 //	if(HAL_CAN_AddTxMessage(hcan, &TxHeader, TxData, &TxMailbox) == HAL_OK)
@@ -198,7 +222,7 @@ static void Save_PDM()
 {
 	uint8_t id = 0, length = 0, buffer[8];
 
-	if(Flag_Datalogger == 0)
+	if(Flag_Datalogger == DL_Save)
 		return;
 
 	id = PDM_FIRST_ID;
@@ -314,7 +338,7 @@ static void Save_ECU()
 {
 	uint8_t id = 0, length = 0, buffer[8];
 
-	if(Flag_Datalogger == 0)
+	if(Flag_Datalogger == DL_Save)
 		return;
 
 	id = ECU_FIRST_ID;
@@ -377,8 +401,10 @@ static void Save_ECU()
 void Principal_CAN_Start(CAN_HandleTypeDef* hcan)
 {
 	CAN_FilterTypeDef sFilterConfig;
-	uint32_t filter_id = CAN_DAQ_FILTER << 13, mask_id = CAN_DAQ_MASK;
+	uint32_t filter_id = 0, mask_id = 0;
 
+	filter_id = CAN_DAQ_FILTER;
+	mask_id = CAN_DAQ_MASK;
 	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
 	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
 	sFilterConfig.FilterIdHigh = filter_id >> 13;
@@ -391,8 +417,24 @@ void Principal_CAN_Start(CAN_HandleTypeDef* hcan)
 	sFilterConfig.SlaveStartFilterBank = 14;
 
 	HAL_CAN_ConfigFilter(hcan, &sFilterConfig);
-	FT_CAN_FilterConfig(hcan, FT600, 1, CAN_RX_FIFO0);
-	PDM_CAN_FilterConfig(hcan, 2, CAN_RX_FIFO0);
+
+	filter_id = CAN_CFG_FILTER;
+	mask_id = CAN_CFG_MASK;
+	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+	sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+	sFilterConfig.FilterIdHigh = filter_id >> 13;
+	sFilterConfig.FilterIdLow = (filter_id << 3) & 0xFFF8;
+	sFilterConfig.FilterMaskIdHigh = mask_id >> 13;
+	sFilterConfig.FilterMaskIdLow = (mask_id << 3) & 0xFFF8;
+	sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+	sFilterConfig.FilterActivation = ENABLE;
+	sFilterConfig.FilterBank = 1;
+	sFilterConfig.SlaveStartFilterBank = 15;
+
+	HAL_CAN_ConfigFilter(hcan, &sFilterConfig);
+
+	FT_CAN_FilterConfig(hcan, FT600, 2, CAN_RX_FIFO0);
+	PDM_CAN_FilterConfig(hcan, 3, CAN_RX_FIFO0);
 
 	HAL_CAN_Start(hcan);
 

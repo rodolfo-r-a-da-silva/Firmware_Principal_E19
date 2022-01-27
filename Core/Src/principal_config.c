@@ -102,4 +102,8 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 	return Save_EEPROM(hi2c);
 }
 
-__weak void Principal_Hard_Code_Config(){}
+__weak void Principal_Hard_Code_Config(){
+	Per_Msg[Analog_1_4] = MSG_FREQ_20HZ;
+	Threshold_RPM = 7000;
+	Threshold_Speed = 1;
+}

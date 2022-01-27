@@ -13,7 +13,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	{
 		Verify_CAN |= 2;
 
-		if(RxHeader.IDE == CAN_ID_STD)
+		if((RxHeader.IDE == CAN_ID_STD) && (Flag_Datalogger == DL_Save))
 			Principal_Datalogger_Save_Buffer(RxHeader.StdId, RxHeader.DLC, RxData, &File_Struct);
 
 		else if(((RxHeader.ExtId & 0x1FFFF000) == 0x1E35C000) && (RxHeader.IDE == CAN_ID_EXT))
@@ -38,7 +38,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			Principal_Beacon_Detect();
 
 		if((Input_Config & 0x02) == 0)
-			Principal_Datalogger_Start(&Date, &Time, Dir_String, Log_String, &Dir_Struct, &File_Struct);
+			Principal_Datalogger_Button(&Date, &Time, Dir_String, Log_String, &Dir_Struct, &File_Struct);
 	}
 
 	if(GPIO_Pin == EXTI1_Pin)
@@ -47,13 +47,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			Principal_Beacon_Detect();
 
 		if((Input_Config & 0x02) == 2)
-			Principal_Datalogger_Start(&Date, &Time, Dir_String, Log_String, &Dir_Struct, &File_Struct);
+			Principal_Datalogger_Button(&Date, &Time, Dir_String, Log_String, &Dir_Struct, &File_Struct);
 	}
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	if(htim->Instance == TIM6)
+	if(htim->Instance == TIM7)
 	{
 		Acc_Datalogger[0]++;
 		if(Acc_Datalogger[1] > 0) Acc_Datalogger[1]--;
