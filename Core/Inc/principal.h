@@ -276,7 +276,7 @@ FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct);
 
 void Principal_Datalogger_Save_Buffer(uint32_t Data_ID, uint8_t Data_Length, uint8_t* Data_Buffer, FIL* file_struct);
 
-void Principal_Datalogger_Button(RTC_DateTypeDef* sDate, RTC_TimeTypeDef* sTime, char* dir, char* file, DIR* dir_struct, FIL* file_struct);
+void Principal_Datalogger_Button(DIR* dir_struct, FIL* file_struct);
 
 void Principal_Card_Detection(FATFS* fatfs_struct, DIR* dir_struct, FIL* file_struct);
 

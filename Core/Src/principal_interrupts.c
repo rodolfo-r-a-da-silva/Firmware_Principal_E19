@@ -38,7 +38,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			Principal_Beacon_Detect();
 
 		if((Input_Config & 0x02) == 0)
-			Principal_Datalogger_Button(&Date, &Time, Dir_String, Log_String, &Dir_Struct, &File_Struct);
+			Principal_Datalogger_Button(&Dir_Struct, &File_Struct);
 	}
 
 	if(GPIO_Pin == EXTI1_Pin)
@@ -47,7 +47,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			Principal_Beacon_Detect();
 
 		if((Input_Config & 0x02) == 2)
-			Principal_Datalogger_Button(&Date, &Time, Dir_String, Log_String, &Dir_Struct, &File_Struct);
+			Principal_Datalogger_Button(&Dir_Struct, &File_Struct);
 	}
 }
 
