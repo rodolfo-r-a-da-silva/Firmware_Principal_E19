@@ -64,10 +64,12 @@ void Principal_Init(CAN_HandleTypeDef* hcan, I2C_HandleTypeDef* hi2c, TIM_Handle
 	if(Load_EEPROM(hi2c) != HAL_OK)
 		Principal_Hard_Code_Config();
 
+	Principal_RTC_Reg_Check(&Date, &Time);
+
 	Principal_Datalogger_Init(&Fatfs_Struct);
 
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &ADC_Buffer[0], 6);
-	HAL_ADC_Start_DMA(&hadc2, (uint32_t*) &ADC_Buffer[6], 6);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &ADC_Buffer[6], 7);
+	HAL_ADC_Start_DMA(&hadc2, (uint32_t*) &ADC_Buffer[0], 6);
 	HAL_TIM_Base_Start_IT(htim);
 
 	Principal_CAN_Start(hcan);
@@ -93,6 +95,16 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 			__LOAD_FREQ(data[3], Per_CAN[Analog_9_12]);
 			__LOAD_FREQ(data[4], Per_CAN[RTC_Msg]);
 			Input_Config = data[5];
+			break;
+
+		case 2:
+			Date.Year = data[1];
+			Date.Month = data[2];
+			Date.Date = data[3];
+			Time.Hours = data[4];
+			Time.Minutes = data[5];
+			Time.Seconds = data[6];
+			Principal_RTC_Get_Date(&Date, &Time);
 			break;
 
 		default:

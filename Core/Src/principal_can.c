@@ -38,7 +38,7 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID;
+	TxHeader.StdId = FIRST_ID + Analog_1_4;
 	TxHeader.DLC = 8;
 
 	TxData[0] = ADC_Buffer[0] >> 8;
@@ -71,7 +71,7 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + 1;
+	TxHeader.StdId = FIRST_ID + Analog_5_8;
 	TxHeader.DLC = 8;
 
 	TxData[0] = ADC_Buffer[4] >> 8;
@@ -104,7 +104,7 @@ static void Tx_Analog_9_12(CAN_HandleTypeDef* hcan)
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + 2;
+	TxHeader.StdId = FIRST_ID + Analog_9_12;
 	TxHeader.DLC = 8;
 
 	TxData[0] = ADC_Buffer[8] >> 8;
@@ -137,15 +137,17 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + 5;
-	TxHeader.DLC = 6;
+	TxHeader.StdId = FIRST_ID + RTC_Msg;
+	TxHeader.DLC = 8;
 
-	TxData[0] = Time.Hours;
-	TxData[1] = Time.Minutes;
-	TxData[2] = Time.Seconds;
-	TxData[3] = Date.Date;
-	TxData[4] = Date.Month;
-	TxData[5] = Date.Year;
+	TxData[0] = Date.Year;
+	TxData[1] = Date.Month;
+	TxData[2] = Date.Date;
+	TxData[3] = Time.Hours;
+	TxData[4] = Time.Minutes;
+	TxData[5] = Time.Seconds;
+	TxData[6] = ADC_Buffer[12] >> 8;
+	TxData[7] = ADC_Buffer[12] & 0xff;
 
 	if(Flag_Datalogger == DL_Save)
 		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
@@ -168,7 +170,7 @@ static void Tx_Verify(CAN_HandleTypeDef* hcan)
 	TxHeader.IDE = CAN_ID_STD;
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + 4;
+	TxHeader.StdId = FIRST_ID + Verify_Msg;
 	TxHeader.DLC = 8;
 
 	Verify_Data();

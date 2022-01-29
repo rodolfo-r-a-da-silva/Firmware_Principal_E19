@@ -31,16 +31,18 @@
 
 //DATA
 #define ADC_THRESHOLD		30
-#define NBR_OF_CHANNELS		12
+#define NBR_OF_CHANNELS		13
 #define NBR_OF_MSGS			4
 #define NBR_OF_LOCAL_MSGS	3
 
 //DATALOGGER
 #define BUTTON_COOLDOWN			500
 #define DATALOGGER_BUFFER_SIZE	512
-#define DATALOGGER_MSG_MAX_SIZE	21
+#define DATALOGGER_MSG_MAX_SIZE	13
+#define DATALOGGER_SAVE_THR		DATALOGGER_BUFFER_SIZE - DATALOGGER_MSG_MAX_SIZE
 #define DIRECTORY_STRING_SIZE	9
 #define LOG_STRING_SIZE			50
+#define RTC_STORE_DATA			0xE35C
 
 //FREQUENCIES
 #define MSG_FREQ_1HZ	1000
@@ -164,7 +166,7 @@ typedef enum{
 }DL_Flag_TypeDef;
 
 typedef enum{
-	Analog_1_4	= 0x00,
+	Analog_1_4 = 0x00,
 	Analog_5_8,
 	Analog_9_12,
 	RTC_Msg,
@@ -173,6 +175,11 @@ typedef enum{
 	PDM_Save,
 	Beacon_Msg
 }Message_TypeDef;
+
+typedef enum{
+	RTC_OK = 0x00,
+	RTC_Lost
+}RTC_Flag_TypeDef;
 /*END ENUMS*/
 
 /*BEGIN GLOBAL VARIABLES*/
@@ -194,7 +201,7 @@ CAN_TxHeaderTypeDef TxHeader;
 
 //DATA
 uint8_t Lap_Number;
-uint16_t ADC_Buffer[12];
+uint16_t ADC_Buffer[NBR_OF_CHANNELS];
 uint32_t Lap_Time;
 FT_Data ECU_Data;
 PDM_Data PDM_Readings;
@@ -218,6 +225,7 @@ uint8_t
 	Flag_CAN,
 	Flag_USB;
 DL_Flag_TypeDef Flag_Datalogger;
+RTC_Flag_TypeDef Flag_RTC;
 
 //INPUTS
 uint8_t Input_Config;
@@ -270,14 +278,16 @@ void Principal_Datalogger_Save_Buffer(uint32_t Data_ID, uint8_t Data_Length, uin
 
 void Principal_Datalogger_Button(RTC_DateTypeDef* sDate, RTC_TimeTypeDef* sTime, char* dir, char* file, DIR* dir_struct, FIL* file_struct);
 
-void Principal_Card_Detection();
+void Principal_Card_Detection(FATFS* fatfs_struct, DIR* dir_struct, FIL* file_struct);
 
 void Principal_Beacon_Detect();
 
 //RTC
-void Principal_RTC_Calibrate(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime);
+void Principal_RTC_Reg_Check(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime);
 
 void Principal_RTC_Get_Date(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime);
+
+void Principal_RTC_Set_Date(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime);
 /*END FUNCTION PROTOTYPES*/
 
 #endif /* INC_PRINCIPAL_H_ */

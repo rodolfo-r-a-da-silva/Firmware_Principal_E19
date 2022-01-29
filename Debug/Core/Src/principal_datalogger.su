@@ -1,7 +1,7 @@
 principal_datalogger.c:14:9:Principal_Datalogger_Init	24	static
-principal_datalogger.c:39:9:Principal_Datalogger_Start	40	static
-principal_datalogger.c:99:9:Principal_Datalogger_Finish	24	static
-principal_datalogger.c:123:6:Principal_Datalogger_Save_Buffer	56	dynamic
-principal_datalogger.c:166:6:Principal_Datalogger_Button	24	static
-principal_datalogger.c:177:6:Principal_Card_Detection	16	static
-principal_datalogger.c:194:6:Principal_Beacon_Detect	8	static
+principal_datalogger.c:39:9:Principal_Datalogger_Start	64	static
+principal_datalogger.c:93:9:Principal_Datalogger_Finish	24	static
+principal_datalogger.c:117:6:Principal_Datalogger_Save_Buffer	56	dynamic
+principal_datalogger.c:162:6:Principal_Datalogger_Button	24	static
+principal_datalogger.c:173:6:Principal_Card_Detection	32	static
+principal_datalogger.c:191:6:Principal_Beacon_Detect	8	static
