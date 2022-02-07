@@ -1,3 +1,2 @@
 principal_rtc.c:10:6:Principal_RTC_Reg_Check	16	static
-principal_rtc.c:22:6:Principal_RTC_Get_Date	16	static
-principal_rtc.c:28:6:Principal_RTC_Set_Date	16	static
+principal_rtc.c:19:6:Principal_RTC_Set_Date	16	static

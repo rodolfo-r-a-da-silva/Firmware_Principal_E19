@@ -140,6 +140,9 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 	TxHeader.StdId = FIRST_ID + RTC_Msg;
 	TxHeader.DLC = 8;
 
+	HAL_RTC_GetTime(&hrtc, &Time, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &Date, RTC_FORMAT_BIN);
+
 	TxData[0] = Date.Year;
 	TxData[1] = Date.Month;
 	TxData[2] = Date.Date;

@@ -36,7 +36,7 @@ FRESULT Principal_Datalogger_Init(FATFS* fatfs_struct)
 	return retVal;
 }
 
-FRESULT Principal_Datalogger_Start(RTC_DateTypeDef* sDate, RTC_TimeTypeDef* sTime, char* dir, char* file, DIR* dir_struct, FIL* file_struct)
+FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* file_struct)
 {
 	FRESULT retVal = FR_OK;
 
@@ -46,23 +46,28 @@ FRESULT Principal_Datalogger_Start(RTC_DateTypeDef* sDate, RTC_TimeTypeDef* sTim
 		return FR_DISK_ERR;
 	}
 
-	if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_RESET)
+	if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET)
+			|| (Flag_RTC != RTC_OK)
+			|| ((Flag_Datalogger != DL_But_Press)
 			&& (ECU_Data.rpm < Threshold_RPM)
 			&& (ECU_Data.wheel_speed_fl < Threshold_Speed)
 			&& (ECU_Data.wheel_speed_fr < Threshold_Speed)
 			&& (ECU_Data.wheel_speed_rl < Threshold_Speed)
-			&& (ECU_Data.wheel_speed_rr < Threshold_Speed)
-			&& (Flag_Datalogger != DL_But_Press)
-			&& (HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_RESET))
+			&& (ECU_Data.wheel_speed_rr < Threshold_Speed)))
 		return FR_OK;
+
+	RTC_DateTypeDef sDate;
+	RTC_TimeTypeDef sTime;
 
 	Datalogger_Buffer_Position = 0;
 	memset(Datalogger_Buffer, '\0', DATALOGGER_BUFFER_SIZE);
 
-	Principal_RTC_Get_Date(sDate, sTime);
-	sprintf(dir, "%02d_%02d_%02d", sDate->Year, sDate->Month, sDate->Date);
+	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
-	sprintf(file, "%s/%02d_%02d_%02d_%02d_%02d_%02d.sd", dir, sDate->Year, sDate->Month, sDate->Date, sTime->Hours, sTime->Minutes, sTime->Seconds);
+	sprintf(dir, "%02d_%02d_%02d", sDate.Year, sDate.Month, sDate.Date);
+
+	sprintf(file, "%s/%02d_%02d_%02d_%02d_%02d_%02d.sd", dir, sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes, sTime.Seconds);
 
 	retVal = f_mkdir(dir);
 
@@ -100,8 +105,8 @@ FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct)
 {
 	FRESULT retVal = FR_OK;
 
-	f_closedir(dir_struct);
 	retVal = f_close(file_struct);
+	f_closedir(dir_struct);
 
 	if(HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin) == GPIO_PIN_SET)
 	{

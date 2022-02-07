@@ -138,13 +138,13 @@ int main(void)
   {
 	  //Checks if data is being saved and starts saving if conditions are met
 	  if(Flag_Datalogger == DL_No_Save)
-		  Principal_Datalogger_Start(&Date, &Time, Dir_String, Log_String, &Dir_Struct, &File_Struct);
+		  Principal_Datalogger_Start(Dir_String, Log_String, &Dir_Struct, &File_Struct);
 
 	  //Checks card detect pin level change for datalogger initialization or deinitialization
 	  Principal_Card_Detection(&Fatfs_Struct, &Dir_Struct, &File_Struct);
 
 	  //Checks USB cable connection, if connected will disable logging
-	  if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET) && (Flag_Datalogger != DL_Save))
+	  if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET) && (Flag_Datalogger == DL_Save))
 		  Principal_Datalogger_Finish(&Dir_Struct, &File_Struct);
 
 	  //Analog inputs 1-4 CAN message
@@ -652,7 +652,7 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
   hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
-  hsd.Init.ClockDiv = 2;
+  hsd.Init.ClockDiv = 3;
   /* USER CODE BEGIN SDIO_Init 2 */
 
   /* USER CODE END SDIO_Init 2 */

@@ -20,7 +20,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 			PDM_CAN_Process_Data(RxHeader.ExtId, RxHeader.DLC, RxData, &PDM_Readings);
 
 		else if((RxHeader.ExtId == CONFIG_ID) && (RxHeader.IDE == CAN_ID_EXT))
-			Principal_Receive_Config(&hi2c1, RxData);
+			Principal_Receive_Config(&hi2c1, RxData, RxHeader.DLC);
 
 		else
 			FT_CAN_ReceiveData(RxHeader.ExtId, RxHeader.DLC, RxData, &ECU_Data);

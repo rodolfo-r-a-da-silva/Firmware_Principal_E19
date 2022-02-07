@@ -22,7 +22,7 @@
 #include "usbd_storage_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "principal.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -191,8 +191,13 @@ int8_t STORAGE_Init_FS(uint8_t lun)
 int8_t STORAGE_GetCapacity_FS(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
   /* USER CODE BEGIN 3 */
-  *block_num  = STORAGE_BLK_NBR;
-  *block_size = STORAGE_BLK_SIZ;
+  HAL_SD_CardInfoTypeDef info;
+
+  HAL_SD_GetCardInfo(&hsd, &info);
+
+  *block_num =  info.LogBlockNbr - 1;
+  *block_size = info.LogBlockSize;
+
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -229,6 +234,12 @@ int8_t STORAGE_IsWriteProtected_FS(uint8_t lun)
 int8_t STORAGE_Read_FS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
   /* USER CODE BEGIN 6 */
+  HAL_SD_ReadBlocks(&hsd, buf, blk_addr, blk_len, HAL_MAX_DELAY);
+//	HAL_SD_ReadBlocks_DMA(&hsd, buf, blk_addr, blk_len);
+
+  /* Wait until SD card is ready to use for new operation */
+  while (HAL_SD_GetCardState(&hsd) != HAL_SD_CARD_TRANSFER);
+
   return (USBD_OK);
   /* USER CODE END 6 */
 }
@@ -241,6 +252,12 @@ int8_t STORAGE_Read_FS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t bl
 int8_t STORAGE_Write_FS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
   /* USER CODE BEGIN 7 */
+  HAL_SD_WriteBlocks(&hsd, buf, blk_addr, blk_len, HAL_MAX_DELAY);
+//	HAL_SD_WriteBlocks_DMA(&hsd, buf, blk_addr, blk_len);
+
+  /* Wait until SD card is ready to use for new operation */
+  while (HAL_SD_GetCardState(&hsd) != HAL_SD_CARD_TRANSFER);
+
   return (USBD_OK);
   /* USER CODE END 7 */
 }

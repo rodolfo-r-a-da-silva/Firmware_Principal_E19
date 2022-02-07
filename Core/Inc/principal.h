@@ -27,7 +27,7 @@
 #define PDM_FIRST_ID	50
 
 //CONFIGURATION
-#define EEPROM_BUFFER_SIZE		11
+#define EEPROM_BUFFER_SIZE	16
 
 //DATA
 #define ADC_THRESHOLD		30
@@ -263,14 +263,14 @@ void Principal_Transmit_Msg(CAN_HandleTypeDef* hcan, uint8_t msg_number);
 //CONFIGURATION
 void Principal_Init(CAN_HandleTypeDef* hcan, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim);
 
-HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* data);
+HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* data, uint32_t length);
 
 void Principal_Hard_Code_Config();
 
 //DATALOGGER
 FRESULT Principal_Datalogger_Init(FATFS* fatfs_struct);
 
-FRESULT Principal_Datalogger_Start(RTC_DateTypeDef* sDate, RTC_TimeTypeDef* sTime, char* dir, char* file, DIR* dir_struct, FIL* file_struct);
+FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* file_struct);
 
 FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct);
 
@@ -281,13 +281,6 @@ void Principal_Datalogger_Button(DIR* dir_struct, FIL* file_struct);
 void Principal_Card_Detection(FATFS* fatfs_struct, DIR* dir_struct, FIL* file_struct);
 
 void Principal_Beacon_Detect();
-
-//RTC
-void Principal_RTC_Reg_Check(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime);
-
-void Principal_RTC_Get_Date(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime);
-
-void Principal_RTC_Set_Date(RTC_DateTypeDef *sDate, RTC_TimeTypeDef *sTime);
 /*END FUNCTION PROTOTYPES*/
 
 #endif /* INC_PRINCIPAL_H_ */

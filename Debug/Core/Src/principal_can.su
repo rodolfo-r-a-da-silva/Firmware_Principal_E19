@@ -3,9 +3,9 @@ principal_can.c:36:13:Tx_Analog_1_4	24	static
 principal_can.c:69:13:Tx_Analog_5_8	24	static
 principal_can.c:102:13:Tx_Analog_9_12	24	static
 principal_can.c:135:13:Tx_RTC	24	static
-principal_can.c:168:13:Tx_Verify	24	static
-principal_can.c:201:13:Tx_Beacon	16	static
-principal_can.c:223:13:Save_PDM	24	static
-principal_can.c:339:13:Save_ECU	24	static
-principal_can.c:403:6:Principal_CAN_Start	64	static
-principal_can.c:446:6:Principal_Transmit_Msg	16	static
+principal_can.c:171:13:Tx_Verify	24	static
+principal_can.c:204:13:Tx_Beacon	16	static
+principal_can.c:226:13:Save_PDM	24	static
+principal_can.c:342:13:Save_ECU	24	static
+principal_can.c:406:6:Principal_CAN_Start	64	static
+principal_can.c:449:6:Principal_Transmit_Msg	16	static
