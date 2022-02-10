@@ -9,25 +9,25 @@
 
 static void Verify_Data()
 {
-	Verify = 0;
+	verifyADC = 0;
 
 	for(uint8_t i = 0; i < NBR_OF_CHANNELS; i++)
-		if(ADC_Buffer[i] > ADC_THRESHOLD)
-			Verify |= (1 << i);
+		if(adcBuffer[i] >= ADC_THRESHOLD)
+			verifyADC |= (1 << i);
 
 	HAL_GPIO_TogglePin(LED_OK);
 
-	if(Verify_Datalogger == 1)
+	if(verifyDatalogger == 1)
 		HAL_GPIO_WritePin(LED_DATALOGGER, GPIO_PIN_SET);
 	else
 		HAL_GPIO_WritePin(LED_DATALOGGER, GPIO_PIN_RESET);
 
-	if((Verify_CAN & 1) == 1)
+	if((verifyCAN & 1) == 1)
 		HAL_GPIO_TogglePin(LED_CAN_TX);
 	else
 		HAL_GPIO_WritePin(LED_CAN_TX, GPIO_PIN_RESET);
 
-	if((Verify_CAN & 2) == 2)
+	if((verifyCAN & 2) == 2)
 		HAL_GPIO_TogglePin(LED_CAN_RX);
 	else
 		HAL_GPIO_WritePin(LED_CAN_RX, GPIO_PIN_RESET);
@@ -35,31 +35,35 @@ static void Verify_Data()
 
 static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 {
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + Analog_1_4;
-	TxHeader.DLC = 8;
+	txHeader.IDE = CAN_ID_STD;
+	txHeader.RTR = CAN_RTR_DATA;
+	txHeader.TransmitGlobalTime = DISABLE;
+	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + ANALOG_1_4);
+	txHeader.DLC = 8;
 
-	TxData[0] = ADC_Buffer[0] >> 8;
-	TxData[1] = ADC_Buffer[0] & 0xff;
-	TxData[2] = ADC_Buffer[1] >> 8;
-	TxData[3] = ADC_Buffer[1] & 0xff;
-	TxData[4] = ADC_Buffer[2] >> 8;
-	TxData[5] = ADC_Buffer[2] & 0xff;
-	TxData[6] = ADC_Buffer[3] >> 8;
-	TxData[7] = ADC_Buffer[3] & 0xff;
+	if((verifyADC & 0x000f) == 0)
+		return;
 
-	if(Flag_Datalogger == DL_Save)
-		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
+	txData[0] = adcBuffer[0] >> 8;
+	txData[1] = adcBuffer[0] & 0xff;
+	txData[2] = adcBuffer[1] >> 8;
+	txData[3] = adcBuffer[1] & 0xff;
+	txData[4] = adcBuffer[2] >> 8;
+	txData[5] = adcBuffer[2] & 0xff;
+	txData[6] = adcBuffer[3] >> 8;
+	txData[7] = adcBuffer[3] & 0xff;
 
-	if((Acc_CAN[Analog_1_4] >= Per_CAN[Analog_1_4]) && (Per_CAN[Analog_1_4] != 0))
+	if(flagDatalogger == DL_SAVE)
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+
+	if((accCAN[ANALOG_1_4] >= perCAN[ANALOG_1_4]) && (perCAN[ANALOG_1_4] != MSG_DISABLED))
 	{
-		Acc_CAN[Analog_1_4] -= Per_CAN[Analog_1_4];
-		if(HAL_CAN_AddTxMessage(hcan, &TxHeader, TxData, &TxMailbox) == HAL_OK)
-			Verify_CAN |= 1;
+		accCAN[ANALOG_1_4] -= perCAN[ANALOG_1_4];
+
+		if(HAL_CAN_AddTxMessage(hcan, &txHeader, txData, &txMailbox) == HAL_OK)
+			verifyCAN |= 1;
 		else
-			Verify_CAN &= 0x02;
+			verifyCAN &= 0x02;
 
 		//Wait Transmission finish
 		for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3 && i < 3; i++);
@@ -68,31 +72,35 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 
 static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 {
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + Analog_5_8;
-	TxHeader.DLC = 8;
+	txHeader.IDE = CAN_ID_STD;
+	txHeader.RTR = CAN_RTR_DATA;
+	txHeader.TransmitGlobalTime = DISABLE;
+	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + ANALOG_5_8);
+	txHeader.DLC = 8;
 
-	TxData[0] = ADC_Buffer[4] >> 8;
-	TxData[1] = ADC_Buffer[4] & 0xff;
-	TxData[2] = ADC_Buffer[5] >> 8;
-	TxData[3] = ADC_Buffer[5] & 0xff;
-	TxData[4] = ADC_Buffer[6] >> 8;
-	TxData[5] = ADC_Buffer[6] & 0xff;
-	TxData[6] = ADC_Buffer[7] >> 8;
-	TxData[7] = ADC_Buffer[7] & 0xff;
+	if((verifyADC & 0x00f0) == 0)
+		return;
 
-	if(Flag_Datalogger == DL_Save)
-		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
+	txData[0] = adcBuffer[4] >> 8;
+	txData[1] = adcBuffer[4] & 0xff;
+	txData[2] = adcBuffer[5] >> 8;
+	txData[3] = adcBuffer[5] & 0xff;
+	txData[4] = adcBuffer[6] >> 8;
+	txData[5] = adcBuffer[6] & 0xff;
+	txData[6] = adcBuffer[7] >> 8;
+	txData[7] = adcBuffer[7] & 0xff;
 
-	if((Acc_CAN[Analog_5_8] >= Per_CAN[Analog_5_8]) && (Per_CAN[Analog_5_8] != 0))
+	if(flagDatalogger == DL_SAVE)
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+
+	if((accCAN[ANALOG_5_8] >= perCAN[ANALOG_5_8]) && (perCAN[ANALOG_5_8] != MSG_DISABLED))
 	{
-		Acc_CAN[Analog_5_8] -= Per_CAN[Analog_5_8];
-		if(HAL_CAN_AddTxMessage(hcan, &TxHeader, TxData, &TxMailbox) == HAL_OK)
-			Verify_CAN |= 1;
+		accCAN[ANALOG_5_8] -= perCAN[ANALOG_5_8];
+
+		if(HAL_CAN_AddTxMessage(hcan, &txHeader, txData, &txMailbox) == HAL_OK)
+			verifyCAN |= 1;
 		else
-			Verify_CAN &= 0x02;
+			verifyCAN &= 0x02;
 
 		//Wait Transmission finish
 		for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3 && i < 3; i++);
@@ -101,31 +109,35 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 
 static void Tx_Analog_9_12(CAN_HandleTypeDef* hcan)
 {
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + Analog_9_12;
-	TxHeader.DLC = 8;
+	txHeader.IDE = CAN_ID_STD;
+	txHeader.RTR = CAN_RTR_DATA;
+	txHeader.TransmitGlobalTime = DISABLE;
+	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + ANALOG_9_12);
+	txHeader.DLC = 8;
 
-	TxData[0] = ADC_Buffer[8] >> 8;
-	TxData[1] = ADC_Buffer[8] & 0xff;
-	TxData[2] = ADC_Buffer[9] >> 8;
-	TxData[3] = ADC_Buffer[9] & 0xff;
-	TxData[4] = ADC_Buffer[10] >> 8;
-	TxData[5] = ADC_Buffer[10] & 0xff;
-	TxData[6] = ADC_Buffer[11] >> 8;
-	TxData[7] = ADC_Buffer[11] & 0xff;
+	if((verifyADC & 0x0f00) == 0)
+		return;
 
-	if(Flag_Datalogger == DL_Save)
-		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
+	txData[0] = adcBuffer[8] >> 8;
+	txData[1] = adcBuffer[8] & 0xff;
+	txData[2] = adcBuffer[9] >> 8;
+	txData[3] = adcBuffer[9] & 0xff;
+	txData[4] = adcBuffer[10] >> 8;
+	txData[5] = adcBuffer[10] & 0xff;
+	txData[6] = adcBuffer[11] >> 8;
+	txData[7] = adcBuffer[11] & 0xff;
 
-	if((Acc_CAN[Analog_9_12] >= Per_CAN[Analog_9_12]) && (Per_CAN[Analog_9_12] != 0))
+	if(flagDatalogger == DL_SAVE)
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+
+	if((accCAN[ANALOG_9_12] >= perCAN[ANALOG_9_12]) && (perCAN[ANALOG_9_12] != MSG_DISABLED))
 	{
-		Acc_CAN[Analog_9_12] -= Per_CAN[Analog_9_12];
-		if(HAL_CAN_AddTxMessage(hcan, &TxHeader, TxData, &TxMailbox) == HAL_OK)
-			Verify_CAN |= 1;
+		accCAN[ANALOG_9_12] -= perCAN[ANALOG_9_12];
+
+		if(HAL_CAN_AddTxMessage(hcan, &txHeader, txData, &txMailbox) == HAL_OK)
+			verifyCAN |= 1;
 		else
-			Verify_CAN &= 0x02;
+			verifyCAN &= 0x02;
 
 		//Wait Transmission finish
 		for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3 && i < 3; i++);
@@ -134,34 +146,35 @@ static void Tx_Analog_9_12(CAN_HandleTypeDef* hcan)
 
 static void Tx_RTC(CAN_HandleTypeDef* hcan)
 {
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + RTC_Msg;
-	TxHeader.DLC = 8;
+	txHeader.IDE = CAN_ID_STD;
+	txHeader.RTR = CAN_RTR_DATA;
+	txHeader.TransmitGlobalTime = DISABLE;
+	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + RTC_MSG);
+	txHeader.DLC = 8;
 
-	HAL_RTC_GetTime(&hrtc, &Time, RTC_FORMAT_BIN);
-	HAL_RTC_GetDate(&hrtc, &Date, RTC_FORMAT_BIN);
+	HAL_RTC_GetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN);
+	HAL_RTC_GetDate(&hrtc, &rtcDate, RTC_FORMAT_BIN);
 
-	TxData[0] = Date.Year;
-	TxData[1] = Date.Month;
-	TxData[2] = Date.Date;
-	TxData[3] = Time.Hours;
-	TxData[4] = Time.Minutes;
-	TxData[5] = Time.Seconds;
-	TxData[6] = ADC_Buffer[12] >> 8;
-	TxData[7] = ADC_Buffer[12] & 0xff;
+	txData[0] = rtcDate.Year;
+	txData[1] = rtcDate.Month;
+	txData[2] = rtcDate.Date;
+	txData[3] = rtcTime.Hours;
+	txData[4] = rtcTime.Minutes;
+	txData[5] = rtcTime.Seconds;
+	txData[6] = adcBuffer[12] >> 8;
+	txData[7] = adcBuffer[12] & 0xff;
 
-	if(Flag_Datalogger == DL_Save)
-		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
+	if(flagDatalogger == DL_SAVE)
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
 
-	if((Acc_CAN[RTC_Msg] >= Per_CAN[RTC_Msg]) && (Per_CAN[RTC_Msg] != 0))
+	if((accCAN[RTC_MSG] >= perCAN[RTC_MSG]) && (perCAN[RTC_MSG] != MSG_DISABLED))
 	{
-		Acc_CAN[RTC_Msg] -= Per_CAN[RTC_Msg];
-		if(HAL_CAN_AddTxMessage(hcan, &TxHeader, TxData, &TxMailbox) == HAL_OK)
-			Verify_CAN |= 1;
+		accCAN[RTC_MSG] -= perCAN[RTC_MSG];
+
+		if(HAL_CAN_AddTxMessage(hcan, &txHeader, txData, &txMailbox) == HAL_OK)
+			verifyCAN |= 1;
 		else
-			Verify_CAN &= 0x02;
+			verifyCAN &= 0x02;
 
 		//Wait Transmission finish
 		for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3 && i < 3; i++);
@@ -170,235 +183,259 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 
 static void Tx_Verify(CAN_HandleTypeDef* hcan)
 {
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = FIRST_ID + Verify_Msg;
-	TxHeader.DLC = 8;
+	txHeader.IDE = CAN_ID_STD;
+	txHeader.RTR = CAN_RTR_DATA;
+	txHeader.TransmitGlobalTime = DISABLE;
+	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + VERIFY_MSG);
+	txHeader.DLC = 8;
 
 	Verify_Data();
 
-	TxData[0]  = Verify >> 8;
-	TxData[1]  = Verify & 0x0f;
-	TxData[1] |= Verify_Datalogger << 4;
+	txData[0]  = verifyADC >> 8;
+	txData[1]  = verifyADC & 0x0f;
+	txData[1] |= verifyDatalogger << 4;
 
-	__SAVE_FREQ(TxData[2], Per_Msg[Analog_1_4]);
-	__SAVE_FREQ(TxData[3], Per_Msg[Analog_5_8]);
-	__SAVE_FREQ(TxData[4], Per_Msg[Analog_9_12]);
-	__SAVE_FREQ(TxData[5], Per_Msg[RTC_Msg]);
-	__SAVE_FREQ(TxData[6], Per_Msg[PDM_Save]);
-	__SAVE_FREQ(TxData[7], Per_Msg[ECU_Save]);
+	if(flagRTC == RTC_OK)
+		txData[1] |= (1 << 5);
 
-	if(Flag_Datalogger == DL_Save)
-		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
+	__FREQ_TO_BUFFER(txData[2], perMsg[ANALOG_1_4]);
+	__FREQ_TO_BUFFER(txData[3], perMsg[ANALOG_5_8]);
+	__FREQ_TO_BUFFER(txData[4], perMsg[ANALOG_9_12]);
+	__FREQ_TO_BUFFER(txData[5], perMsg[RTC_MSG]);
+	__FREQ_TO_BUFFER(txData[6], perMsg[PDM_SAVE]);
+	__FREQ_TO_BUFFER(txData[7], perMsg[ECU_SAVE]);
 
-	if(HAL_CAN_AddTxMessage(hcan, &TxHeader, TxData, &TxMailbox) == HAL_OK)
-		Verify_CAN |= 1;
-	else
-		Verify_CAN &= 0x02;
+	if(flagDatalogger == DL_SAVE)
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
 
-	//Wait Transmission finish
-	for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3 && i < 3; i++);
+	if((accCAN[VERIFY_MSG] >= perCAN[VERIFY_MSG]) && (perCAN[VERIFY_MSG] != MSG_DISABLED))
+	{
+		accCAN[VERIFY_MSG] -= perCAN[VERIFY_MSG];
+
+		if(HAL_CAN_AddTxMessage(hcan, &txHeader, txData, &txMailbox) == HAL_OK)
+			verifyCAN |= 1;
+		else
+			verifyCAN &= 0x02;
+
+		//Wait Transmission finish
+		for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3 && i < 3; i++);
+	}
 }
 
 static void Tx_Beacon(CAN_HandleTypeDef* hcan)
 {
-	TxHeader.IDE = CAN_ID_STD;
-	TxHeader.RTR = CAN_RTR_DATA;
-	TxHeader.TransmitGlobalTime = DISABLE;
-	TxHeader.StdId = BEACON_ID;
-	TxHeader.DLC = 1;
+	uint16_t buffer[3];
 
-	TxData[0] = Lap_Number;
+	txHeader.IDE = CAN_ID_STD;
+	txHeader.RTR = CAN_RTR_DATA;
+	txHeader.TransmitGlobalTime = DISABLE;
+	txHeader.StdId = CAN_DAQ_FILTER | BEACON_ID;
+	txHeader.DLC = 5;
 
-	if(Flag_Datalogger == DL_Save)
-		Principal_Datalogger_Save_Buffer(TxHeader.StdId, TxHeader.DLC, TxData, &File_Struct);
+	buffer[0] = accLap / 60000;
+	buffer[1] = accLap / 1000;
+	buffer[2] = accLap % 1000;
 
-//	if(HAL_CAN_AddTxMessage(hcan, &TxHeader, TxData, &TxMailbox) == HAL_OK)
-//		Verify_CAN |= 1;
-//	else
-//		Verify_CAN &= 0x02;
-//
-//	//Wait Transmission finish
-//	for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3 && i < 3; i++);
+	accLap = 0;
+
+	txData[0] = lapNumber;
+	txData[1] = buffer[0] & 0xff;
+	txData[2] = buffer[1] & 0xff;
+	txData[3] = buffer[2] >> 8;
+	txData[4] = buffer[2] & 0xff;
+
+	if(flagDatalogger == DL_SAVE)
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+
+	if((accCAN[BEACON_MSG] >= perCAN[BEACON_MSG]) && (perCAN[BEACON_MSG] != MSG_DISABLED))
+	{
+		accCAN[BEACON_MSG] -= perCAN[BEACON_MSG];
+		if(HAL_CAN_AddTxMessage(hcan, &txHeader, txData, &txMailbox) == HAL_OK)
+			verifyCAN |= 1;
+		else
+			verifyCAN &= 0x02;
+
+		//Wait Transmission finish
+		for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(hcan) != 3 && i < 3; i++);
+	}
 }
 
 static void Save_PDM()
 {
 	uint8_t id = 0, length = 0, buffer[8];
 
-	if(Flag_Datalogger == DL_Save)
+	if(flagDatalogger != DL_SAVE)
 		return;
 
 	id = PDM_FIRST_ID;
 	length = 8;
 
-	buffer[0] = PDM_Readings.Current_Buffer[0] << 8;
-	buffer[1] = PDM_Readings.Current_Buffer[0] & 0xff;
-	buffer[2] = PDM_Readings.Current_Buffer[1] << 8;
-	buffer[3] = PDM_Readings.Current_Buffer[1] & 0xff;
-	buffer[4] = PDM_Readings.Current_Buffer[2] << 8;
-	buffer[5] = PDM_Readings.Current_Buffer[2] & 0xff;
-	buffer[6] = PDM_Readings.Current_Buffer[3] << 8;
-	buffer[7] = PDM_Readings.Current_Buffer[3] & 0xff;
+	buffer[0] = pdmReadings.Current_Buffer[0] << 8;
+	buffer[1] = pdmReadings.Current_Buffer[0] & 0xff;
+	buffer[2] = pdmReadings.Current_Buffer[1] << 8;
+	buffer[3] = pdmReadings.Current_Buffer[1] & 0xff;
+	buffer[4] = pdmReadings.Current_Buffer[2] << 8;
+	buffer[5] = pdmReadings.Current_Buffer[2] & 0xff;
+	buffer[6] = pdmReadings.Current_Buffer[3] << 8;
+	buffer[7] = pdmReadings.Current_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = PDM_FIRST_ID + 1;
 	length = 8;
 
-	buffer[0] = PDM_Readings.Current_Buffer[4] << 8;
-	buffer[1] = PDM_Readings.Current_Buffer[4] & 0xff;
-	buffer[2] = PDM_Readings.Current_Buffer[5] << 8;
-	buffer[3] = PDM_Readings.Current_Buffer[5] & 0xff;
-	buffer[4] = PDM_Readings.Current_Buffer[6] << 8;
-	buffer[5] = PDM_Readings.Current_Buffer[6] & 0xff;
-	buffer[6] = PDM_Readings.Current_Buffer[7] << 8;
-	buffer[7] = PDM_Readings.Current_Buffer[7] & 0xff;
+	buffer[0] = pdmReadings.Current_Buffer[4] << 8;
+	buffer[1] = pdmReadings.Current_Buffer[4] & 0xff;
+	buffer[2] = pdmReadings.Current_Buffer[5] << 8;
+	buffer[3] = pdmReadings.Current_Buffer[5] & 0xff;
+	buffer[4] = pdmReadings.Current_Buffer[6] << 8;
+	buffer[5] = pdmReadings.Current_Buffer[6] & 0xff;
+	buffer[6] = pdmReadings.Current_Buffer[7] << 8;
+	buffer[7] = pdmReadings.Current_Buffer[7] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = PDM_FIRST_ID + 2;
 	length = 8;
 
-	buffer[0] = PDM_Readings.Current_Buffer[8] << 8;
-	buffer[1] = PDM_Readings.Current_Buffer[8] & 0xff;
-	buffer[2] = PDM_Readings.Current_Buffer[9] << 8;
-	buffer[3] = PDM_Readings.Current_Buffer[9] & 0xff;
-	buffer[4] = PDM_Readings.Current_Buffer[10] << 8;
-	buffer[5] = PDM_Readings.Current_Buffer[10] & 0xff;
-	buffer[6] = PDM_Readings.Current_Buffer[11] << 8;
-	buffer[7] = PDM_Readings.Current_Buffer[11] & 0xff;
+	buffer[0] = pdmReadings.Current_Buffer[8] << 8;
+	buffer[1] = pdmReadings.Current_Buffer[8] & 0xff;
+	buffer[2] = pdmReadings.Current_Buffer[9] << 8;
+	buffer[3] = pdmReadings.Current_Buffer[9] & 0xff;
+	buffer[4] = pdmReadings.Current_Buffer[10] << 8;
+	buffer[5] = pdmReadings.Current_Buffer[10] & 0xff;
+	buffer[6] = pdmReadings.Current_Buffer[11] << 8;
+	buffer[7] = pdmReadings.Current_Buffer[11] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = PDM_FIRST_ID + 3;
 	length = 8;
 
-	buffer[0] = PDM_Readings.Current_Buffer[12] << 8;
-	buffer[1] = PDM_Readings.Current_Buffer[12] & 0xff;
-	buffer[2] = PDM_Readings.Current_Buffer[13] << 8;
-	buffer[3] = PDM_Readings.Current_Buffer[13] & 0xff;
-	buffer[4] = PDM_Readings.Current_Buffer[14] << 8;
-	buffer[5] = PDM_Readings.Current_Buffer[14] & 0xff;
-	buffer[6] = PDM_Readings.Current_Buffer[15] << 8;
-	buffer[7] = PDM_Readings.Current_Buffer[15] & 0xff;
+	buffer[0] = pdmReadings.Current_Buffer[12] << 8;
+	buffer[1] = pdmReadings.Current_Buffer[12] & 0xff;
+	buffer[2] = pdmReadings.Current_Buffer[13] << 8;
+	buffer[3] = pdmReadings.Current_Buffer[13] & 0xff;
+	buffer[4] = pdmReadings.Current_Buffer[14] << 8;
+	buffer[5] = pdmReadings.Current_Buffer[14] & 0xff;
+	buffer[6] = pdmReadings.Current_Buffer[15] << 8;
+	buffer[7] = pdmReadings.Current_Buffer[15] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = PDM_FIRST_ID + 4;
 	length = 8;
 
-	buffer[0] = PDM_Readings.Tempetature_Buffer[0] << 8;
-	buffer[1] = PDM_Readings.Tempetature_Buffer[0] & 0xff;
-	buffer[2] = PDM_Readings.Tempetature_Buffer[1] << 8;
-	buffer[3] = PDM_Readings.Tempetature_Buffer[1] & 0xff;
-	buffer[4] = PDM_Readings.Tempetature_Buffer[2] << 8;
-	buffer[5] = PDM_Readings.Tempetature_Buffer[2] & 0xff;
-	buffer[6] = PDM_Readings.Tempetature_Buffer[3] << 8;
-	buffer[7] = PDM_Readings.Tempetature_Buffer[3] & 0xff;
+	buffer[0] = pdmReadings.Tempetature_Buffer[0] << 8;
+	buffer[1] = pdmReadings.Tempetature_Buffer[0] & 0xff;
+	buffer[2] = pdmReadings.Tempetature_Buffer[1] << 8;
+	buffer[3] = pdmReadings.Tempetature_Buffer[1] & 0xff;
+	buffer[4] = pdmReadings.Tempetature_Buffer[2] << 8;
+	buffer[5] = pdmReadings.Tempetature_Buffer[2] & 0xff;
+	buffer[6] = pdmReadings.Tempetature_Buffer[3] << 8;
+	buffer[7] = pdmReadings.Tempetature_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = PDM_FIRST_ID + 5;
 	length = 8;
 
-	buffer[0] = PDM_Readings.Tempetature_Buffer[4] << 8;
-	buffer[1] = PDM_Readings.Tempetature_Buffer[4] & 0xff;
-	buffer[2] = PDM_Readings.Tempetature_Buffer[5] << 8;
-	buffer[3] = PDM_Readings.Tempetature_Buffer[5] & 0xff;
-	buffer[4] = PDM_Readings.Tempetature_Buffer[6] << 8;
-	buffer[5] = PDM_Readings.Tempetature_Buffer[6] & 0xff;
-	buffer[6] = PDM_Readings.Tempetature_Buffer[7] << 8;
-	buffer[7] = PDM_Readings.Tempetature_Buffer[7] & 0xff;
+	buffer[0] = pdmReadings.Tempetature_Buffer[4] << 8;
+	buffer[1] = pdmReadings.Tempetature_Buffer[4] & 0xff;
+	buffer[2] = pdmReadings.Tempetature_Buffer[5] << 8;
+	buffer[3] = pdmReadings.Tempetature_Buffer[5] & 0xff;
+	buffer[4] = pdmReadings.Tempetature_Buffer[6] << 8;
+	buffer[5] = pdmReadings.Tempetature_Buffer[6] & 0xff;
+	buffer[6] = pdmReadings.Tempetature_Buffer[7] << 8;
+	buffer[7] = pdmReadings.Tempetature_Buffer[7] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = PDM_FIRST_ID + 6;
 	length = 8;
 
-	buffer[0] = PDM_Readings.Duty_Cycle_Buffer[0] << 8;
-	buffer[1] = PDM_Readings.Duty_Cycle_Buffer[0] & 0xff;
-	buffer[2] = PDM_Readings.Duty_Cycle_Buffer[1] << 8;
-	buffer[3] = PDM_Readings.Duty_Cycle_Buffer[1] & 0xff;
-	buffer[4] = PDM_Readings.Duty_Cycle_Buffer[2] << 8;
-	buffer[5] = PDM_Readings.Duty_Cycle_Buffer[2] & 0xff;
-	buffer[6] = PDM_Readings.Duty_Cycle_Buffer[3] << 8;
-	buffer[7] = PDM_Readings.Duty_Cycle_Buffer[3] & 0xff;
+	buffer[0] = pdmReadings.Duty_Cycle_Buffer[0] << 8;
+	buffer[1] = pdmReadings.Duty_Cycle_Buffer[0] & 0xff;
+	buffer[2] = pdmReadings.Duty_Cycle_Buffer[1] << 8;
+	buffer[3] = pdmReadings.Duty_Cycle_Buffer[1] & 0xff;
+	buffer[4] = pdmReadings.Duty_Cycle_Buffer[2] << 8;
+	buffer[5] = pdmReadings.Duty_Cycle_Buffer[2] & 0xff;
+	buffer[6] = pdmReadings.Duty_Cycle_Buffer[3] << 8;
+	buffer[7] = pdmReadings.Duty_Cycle_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = PDM_FIRST_ID + 7;
 	length = 4;
 
-	buffer[0] = PDM_Readings.Input_Voltage << 8;
-	buffer[1] = PDM_Readings.Input_Voltage & 0xff;
-	buffer[2] = PDM_Readings.Output_Verify << 8;
-	buffer[3] = PDM_Readings.Output_Verify & 0xff;
+	buffer[0] = pdmReadings.Input_Voltage << 8;
+	buffer[1] = pdmReadings.Input_Voltage & 0xff;
+	buffer[2] = pdmReadings.Output_Verify << 8;
+	buffer[3] = pdmReadings.Output_Verify & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 }
 
 static void Save_ECU()
 {
 	uint8_t id = 0, length = 0, buffer[8];
 
-	if(Flag_Datalogger == DL_Save)
+	if(flagDatalogger != DL_SAVE)
 		return;
 
 	id = ECU_FIRST_ID;
 	length = 8;
 
-	buffer[0] = ECU_Data.rpm >> 8;
-	buffer[1] = ECU_Data.rpm & 0xff;
-	buffer[2] = ECU_Data.tps >> 8;
-	buffer[3] = ECU_Data.tps & 0xff;
-	buffer[4] = ECU_Data.iat >> 8;
-	buffer[5] = ECU_Data.iat & 0xff;
-	buffer[6] = ECU_Data.ect >> 8;
-	buffer[7] = ECU_Data.ect & 0xff;
+	buffer[0] = ecuData.rpm >> 8;
+	buffer[1] = ecuData.rpm & 0xff;
+	buffer[2] = ecuData.tps >> 8;
+	buffer[3] = ecuData.tps & 0xff;
+	buffer[4] = ecuData.iat >> 8;
+	buffer[5] = ecuData.iat & 0xff;
+	buffer[6] = ecuData.ect >> 8;
+	buffer[7] = ecuData.ect & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = ECU_FIRST_ID + 1;
 	length = 8;
 
-	buffer[0] = ECU_Data.map >> 8;
-	buffer[1] = ECU_Data.map & 0xff;
-	buffer[2] = ECU_Data.fuel_pressure >> 8;
-	buffer[3] = ECU_Data.fuel_pressure & 0xff;
-	buffer[4] = ECU_Data.oil_pressure >> 8;
-	buffer[5] = ECU_Data.oil_pressure & 0xff;
-	buffer[6] = ECU_Data.coolant_pressure >> 8;
-	buffer[7] = ECU_Data.coolant_pressure & 0xff;
+	buffer[0] = ecuData.map >> 8;
+	buffer[1] = ecuData.map & 0xff;
+	buffer[2] = ecuData.fuel_pressure >> 8;
+	buffer[3] = ecuData.fuel_pressure & 0xff;
+	buffer[4] = ecuData.oil_pressure >> 8;
+	buffer[5] = ecuData.oil_pressure & 0xff;
+	buffer[6] = ecuData.coolant_pressure >> 8;
+	buffer[7] = ecuData.coolant_pressure & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = ECU_FIRST_ID + 2;
 	length = 8;
 
-	buffer[0] = ECU_Data.lambda >> 8;
-	buffer[1] = ECU_Data.lambda & 0xff;
-	buffer[2] = ECU_Data.oil_temperature >> 8;
-	buffer[3] = ECU_Data.oil_temperature & 0xff;
-	buffer[4] = ECU_Data.wheel_speed_fl;
-	buffer[5] = ECU_Data.wheel_speed_fr;
-	buffer[6] = ECU_Data.wheel_speed_rl;
-	buffer[7] = ECU_Data.wheel_speed_rr;
+	buffer[0] = ecuData.lambda >> 8;
+	buffer[1] = ecuData.lambda & 0xff;
+	buffer[2] = ecuData.oil_temperature >> 8;
+	buffer[3] = ecuData.oil_temperature & 0xff;
+	buffer[4] = ecuData.wheel_speed_fl;
+	buffer[5] = ecuData.wheel_speed_fr;
+	buffer[6] = ecuData.wheel_speed_rl;
+	buffer[7] = ecuData.wheel_speed_rr;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	id = ECU_FIRST_ID + 3;
 	length = 6;
 
-	buffer[0] = ECU_Data.battery_voltage >> 8;
-	buffer[1] = ECU_Data.battery_voltage & 0xff;
-	buffer[2] = ECU_Data.total_fuel_flow >> 8;
-	buffer[3] = ECU_Data.total_fuel_flow & 0xff;
-	buffer[4] = ECU_Data.gear & 0xff;
-	buffer[5] = ECU_Data.electro_fan & 0xff;
+	buffer[0] = ecuData.battery_voltage >> 8;
+	buffer[1] = ecuData.battery_voltage & 0xff;
+	buffer[2] = ecuData.total_fuel_flow >> 8;
+	buffer[3] = ecuData.total_fuel_flow & 0xff;
+	buffer[4] = ecuData.gear & 0xff;
+	buffer[5] = ecuData.electro_fan & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &File_Struct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
 
 	return;
 }
@@ -450,35 +487,35 @@ void Principal_Transmit_Msg(CAN_HandleTypeDef* hcan, uint8_t msg_number)
 {
 	switch(msg_number)
 	{
-		case Analog_1_4:
+		case ANALOG_1_4:
 			Tx_Analog_1_4(hcan);
 			break;
 
-		case Analog_5_8:
+		case ANALOG_5_8:
 			Tx_Analog_5_8(hcan);
 			break;
 
-		case Analog_9_12:
+		case ANALOG_9_12:
 			Tx_Analog_9_12(hcan);
 			break;
 
-		case Verify_Msg:
+		case VERIFY_MSG:
 			Tx_Verify(hcan);
 			break;
 
-		case RTC_Msg:
+		case RTC_MSG:
 			Tx_RTC(hcan);
 			break;
 
-		case Beacon_Msg:
+		case BEACON_MSG:
 			Tx_Beacon(hcan);
 			break;
 
-		case ECU_Save:
+		case ECU_SAVE:
 			Save_ECU();
 			break;
 
-		case PDM_Save:
+		case PDM_SAVE:
 			Save_PDM();
 			break;
 

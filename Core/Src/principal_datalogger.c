@@ -17,7 +17,7 @@ FRESULT Principal_Datalogger_Init(FATFS* fatfs_struct)
 
 	if(HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin) == GPIO_PIN_SET)
 	{
-		Flag_Datalogger = DL_No_Card;
+		flagDatalogger = DL_NO_CARD;
 		return FR_DISK_ERR;
 	}
 
@@ -25,11 +25,11 @@ FRESULT Principal_Datalogger_Init(FATFS* fatfs_struct)
 
 	retVal = f_mount(fatfs_struct, SDPath, 1);
 
-	Flag_Datalogger = DL_No_Save;
+	flagDatalogger = DL_NO_SAVE;
 
 	if(retVal != FR_OK)
 	{
-		Flag_Datalogger = DL_Error;
+		flagDatalogger = DL_ERROR;
 		f_mount(0, SDPath, 0);
 	}
 
@@ -42,25 +42,25 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 
 	if(HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin) == GPIO_PIN_SET)
 	{
-		Flag_Datalogger = DL_No_Card;
+		flagDatalogger = DL_NO_CARD;
 		return FR_DISK_ERR;
 	}
 
 	if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET)
-			|| (Flag_RTC != RTC_OK)
-			|| ((Flag_Datalogger != DL_But_Press)
-			&& (ECU_Data.rpm < Threshold_RPM)
-			&& (ECU_Data.wheel_speed_fl < Threshold_Speed)
-			&& (ECU_Data.wheel_speed_fr < Threshold_Speed)
-			&& (ECU_Data.wheel_speed_rl < Threshold_Speed)
-			&& (ECU_Data.wheel_speed_rr < Threshold_Speed)))
+			|| (flagRTC != RTC_OK)
+			|| ((flagDatalogger != DL_BUT_PRESS)
+			&& (ecuData.rpm < thresholdRPM)
+			&& (ecuData.wheel_speed_fl < thresholdSpeed)
+			&& (ecuData.wheel_speed_fr < thresholdSpeed)
+			&& (ecuData.wheel_speed_rl < thresholdSpeed)
+			&& (ecuData.wheel_speed_rr < thresholdSpeed)))
 		return FR_OK;
 
 	RTC_DateTypeDef sDate;
 	RTC_TimeTypeDef sTime;
 
-	Datalogger_Buffer_Position = 0;
-	memset(Datalogger_Buffer, '\0', DATALOGGER_BUFFER_SIZE);
+	dataloggerBufferPosition = 0;
+	memset(dataloggerBuffer, '\0', DATALOGGER_BUFFER_SIZE);
 
 	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
@@ -75,7 +75,7 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 
 	if((retVal != FR_OK) && (retVal != FR_EXIST))
 	{
-		Flag_Datalogger = DL_Error;
+		flagDatalogger = DL_ERROR;
 		return retVal;
 	}
 
@@ -85,7 +85,7 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 
 	if(retVal != FR_OK)
 	{
-		Flag_Datalogger = DL_Error;
+		flagDatalogger = DL_ERROR;
 		return retVal;
 	}
 
@@ -94,9 +94,9 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 	res[2] = retVal;
 
 	if(retVal == FR_OK)
-		Flag_Datalogger = DL_Save;
+		flagDatalogger = DL_SAVE;
 	else
-		Flag_Datalogger = DL_Error;
+		flagDatalogger = DL_ERROR;
 
 	return retVal;
 }
@@ -111,20 +111,20 @@ FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct)
 	if(HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin) == GPIO_PIN_SET)
 	{
 		f_mount(0, SDPath, 0);
-		Flag_Datalogger = DL_No_Card;
+		flagDatalogger = DL_NO_CARD;
 	}
 
 	else
-		Flag_Datalogger = DL_No_Save;
+		flagDatalogger = DL_NO_SAVE;
 
-	Verify_Datalogger = 0;
+	verifyDatalogger = 0;
 
 	return retVal;
 }
 
-void Principal_Datalogger_Save_Buffer(uint32_t Data_ID, uint8_t Data_Length, uint8_t* Data_Buffer, FIL* file_struct)
+void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, FIL* file_struct)
 {
-	uint8_t buffer[5 + Data_Length];
+//	uint8_t buffer[5 + data_length];
 	UINT byte;
 	FRESULT verify[2];
 
@@ -134,50 +134,55 @@ void Principal_Datalogger_Save_Buffer(uint32_t Data_ID, uint8_t Data_Length, uin
 	else if(HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET)
 		return;
 
-	buffer[0] = 'D';
-	buffer[1] = 'L';
-	buffer[2] = Data_ID & 0xff;
-	buffer[3] = Data_Length;
-	buffer[4] = Acc_Datalogger[0];
+//	buffer[0] = 'D';
+//	buffer[1] = 'L';
+//	buffer[2] = data_id & 0xff;
+//	buffer[3] = data_length;
+//	buffer[4] = accDatalogger[0];
 
-	Acc_Datalogger[0] = 0;
+	dataloggerBuffer[dataloggerBufferPosition++] = 'D';
+	dataloggerBuffer[dataloggerBufferPosition++] = 'L';
+	dataloggerBuffer[dataloggerBufferPosition++] = data_id & 0xff;
+	dataloggerBuffer[dataloggerBufferPosition++] = data_length;
+	dataloggerBuffer[dataloggerBufferPosition++] = accDatalogger[0];
 
-	for(uint8_t i = 0; i < Data_Length; i++)
-		buffer[5 + i] = Data_Buffer[i];
+	accDatalogger[0] = 0;
 
-//	memcpy(&buffer[5], Data_Buffer, Data_Length);
+//	for(uint8_t i = 0; i < data_length; i++)
+//		buffer[5 + i] = data_buffer[i];
+//
+//	memcpy(dataloggerBuffer + dataloggerBufferPosition, buffer, 5 + data_length);
+//
+//	dataloggerBufferPosition += (5 + data_length);
 
-	memcpy(Datalogger_Buffer + Datalogger_Buffer_Position, buffer, 5 + Data_Length);
+	for(uint8_t i = 0; i < data_length; i++, dataloggerBufferPosition++)
+		dataloggerBuffer[dataloggerBufferPosition] = data_buffer[i];
 
-	Datalogger_Buffer_Position += (5 + Data_Length);
-
-	if(Datalogger_Buffer_Position > DATALOGGER_SAVE_THR)
+	if(dataloggerBufferPosition > DATALOGGER_SAVE_THR)
 	{
-		Datalogger_Buffer_Position++;
-
-		verify[0] = f_write(file_struct, Datalogger_Buffer, Datalogger_Buffer_Position, &byte);
+		verify[0] = f_write(file_struct, dataloggerBuffer, dataloggerBufferPosition, &byte);
 		verify[1] = f_sync(file_struct);
 
 		res[3] = verify[0];
 		res[4] = verify[1];
 
-		if((verify[0] == FR_OK) && (verify[1] == FR_OK) && (Datalogger_Buffer_Position == byte))
-			Verify_Datalogger = 1;
+		if((verify[0] == FR_OK) && (verify[1] == FR_OK) && (dataloggerBufferPosition == byte))
+			verifyDatalogger = 1;
 		else
-			Verify_Datalogger = 0;
+			verifyDatalogger = 0;
 
-		Datalogger_Buffer_Position = 0;
+		dataloggerBufferPosition = 0;
 	}
 }
 
 void Principal_Datalogger_Button(DIR* dir_struct, FIL* file_struct)
 {
-	if(Acc_Datalogger[1] == 0)
+	if(accDatalogger[1] == 0)
 	{
-		Acc_Datalogger[1] = BUTTON_COOLDOWN;
+		accDatalogger[1] = BUTTON_COOLDOWN;
 
-		if(Flag_Datalogger == DL_No_Save)
-			Flag_Datalogger = DL_But_Press;
+		if(flagDatalogger == DL_NO_SAVE)
+			flagDatalogger = DL_BUT_PRESS;
 
 		else
 			Principal_Datalogger_Finish(dir_struct, file_struct);
@@ -188,16 +193,16 @@ void Principal_Card_Detection(FATFS* fatfs_struct, DIR* dir_struct, FIL* file_st
 {
 	GPIO_PinState cd_pin = HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin);
 
-	if((cd_pin == GPIO_PIN_SET) && ((Flag_Datalogger == DL_Save) || (Flag_Datalogger == DL_Error)))
+	if((cd_pin == GPIO_PIN_SET) && ((flagDatalogger == DL_SAVE) || (flagDatalogger == DL_ERROR)))
 		Principal_Datalogger_Finish(dir_struct, file_struct);
 
-	else if((cd_pin == GPIO_PIN_RESET) && (Flag_Datalogger == DL_No_Card))
+	else if((cd_pin == GPIO_PIN_RESET) && (flagDatalogger == DL_NO_CARD))
 		Principal_Datalogger_Init(fatfs_struct);
 }
 
 void Principal_Beacon_Detect()
 {
-	Lap_Number++;
+	lapNumber++;
 
-	Principal_Transmit_Msg(&hcan1, Beacon_Msg);
+	Principal_Transmit_Msg(&hcan1, BEACON_MSG);
 }

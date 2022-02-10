@@ -19,24 +19,25 @@ static HAL_StatusTypeDef Load_EEPROM(I2C_HandleTypeDef* hi2c)
 	else
 		return retVal;
 
-	__LOAD_FREQ(buffer[0], Per_Msg[Analog_1_4]);
-	__LOAD_FREQ(buffer[1], Per_Msg[Analog_5_8]);
-	__LOAD_FREQ(buffer[2], Per_Msg[Analog_9_12]);
-	__LOAD_FREQ(buffer[3], Per_Msg[RTC_Msg]);
-	__LOAD_FREQ(buffer[4], Per_Msg[Verify_Msg]);
-	__LOAD_FREQ(buffer[5], Per_Msg[ECU_Save]);
-	__LOAD_FREQ(buffer[6], Per_Msg[PDM_Save]);
+	__BUFFER_TO_FREQ(buffer[0], perMsg[ANALOG_1_4]);
+	__BUFFER_TO_FREQ(buffer[1], perMsg[ANALOG_5_8]);
+	__BUFFER_TO_FREQ(buffer[2], perMsg[ANALOG_9_12]);
+	__BUFFER_TO_FREQ(buffer[3], perMsg[RTC_MSG]);
+	__BUFFER_TO_FREQ(buffer[4], perMsg[VERIFY_MSG]);
+	__BUFFER_TO_FREQ(buffer[5], perMsg[ECU_SAVE]);
+	__BUFFER_TO_FREQ(buffer[6], perMsg[PDM_SAVE]);
 
-	__LOAD_FREQ(buffer[7], Per_CAN[Analog_1_4]);
-	__LOAD_FREQ(buffer[8], Per_CAN[Analog_5_8]);
-	__LOAD_FREQ(buffer[9], Per_CAN[Analog_9_12]);
-	__LOAD_FREQ(buffer[10], Per_CAN[RTC_Msg]);
+	__BUFFER_TO_FREQ(buffer[7], perCAN[ANALOG_1_4]);
+	__BUFFER_TO_FREQ(buffer[8], perCAN[ANALOG_5_8]);
+	__BUFFER_TO_FREQ(buffer[9], perCAN[ANALOG_9_12]);
+	__BUFFER_TO_FREQ(buffer[10], perCAN[RTC_MSG]);
+	__BUFFER_TO_FREQ(buffer[10], perCAN[VERIFY_MSG]);
 
-	Input_Config = buffer[11];
-	Threshold_RPM	 = buffer[12] << 8;
-	Threshold_RPM	|= buffer[13] & 0xff;
-	Threshold_Speed	 = buffer[14] << 8;
-	Threshold_Speed |= buffer[15] & 0xff;
+	inputConfig 	 = buffer[12];
+	thresholdRPM	 = buffer[13] << 8;
+	thresholdRPM	|= buffer[14] & 0xff;
+	thresholdSpeed	 = buffer[15] << 8;
+	thresholdSpeed |= buffer[16] & 0xff;
 
 	return retVal;
 }
@@ -45,24 +46,25 @@ static HAL_StatusTypeDef Save_EEPROM(I2C_HandleTypeDef* hi2c)
 {
 	uint8_t buffer[EEPROM_BUFFER_SIZE];
 
-	__SAVE_FREQ(buffer[0], Per_Msg[Analog_1_4]);
-	__SAVE_FREQ(buffer[1], Per_Msg[Analog_5_8]);
-	__SAVE_FREQ(buffer[2], Per_Msg[Analog_9_12]);
-	__SAVE_FREQ(buffer[3], Per_Msg[RTC_Msg]);
-	__SAVE_FREQ(buffer[4], Per_Msg[Verify_Msg]);
-	__SAVE_FREQ(buffer[5], Per_Msg[ECU_Save]);
-	__SAVE_FREQ(buffer[6], Per_Msg[PDM_Save]);
+	__FREQ_TO_BUFFER(buffer[0], perMsg[ANALOG_1_4]);
+	__FREQ_TO_BUFFER(buffer[1], perMsg[ANALOG_5_8]);
+	__FREQ_TO_BUFFER(buffer[2], perMsg[ANALOG_9_12]);
+	__FREQ_TO_BUFFER(buffer[3], perMsg[RTC_MSG]);
+	__FREQ_TO_BUFFER(buffer[4], perMsg[VERIFY_MSG]);
+	__FREQ_TO_BUFFER(buffer[5], perMsg[ECU_SAVE]);
+	__FREQ_TO_BUFFER(buffer[6], perMsg[PDM_SAVE]);
 
-	__SAVE_FREQ(buffer[7], Per_CAN[Analog_1_4]);
-	__SAVE_FREQ(buffer[8], Per_CAN[Analog_5_8]);
-	__SAVE_FREQ(buffer[9], Per_CAN[Analog_9_12]);
-	__SAVE_FREQ(buffer[10], Per_CAN[RTC_Msg]);
+	__FREQ_TO_BUFFER(buffer[7], perCAN[ANALOG_1_4]);
+	__FREQ_TO_BUFFER(buffer[8], perCAN[ANALOG_5_8]);
+	__FREQ_TO_BUFFER(buffer[9], perCAN[ANALOG_9_12]);
+	__FREQ_TO_BUFFER(buffer[10], perCAN[RTC_MSG]);
+	__FREQ_TO_BUFFER(buffer[10], perCAN[VERIFY_MSG]);
 
-	buffer[11] = Input_Config;
-	buffer[12] = Threshold_RPM >> 8;
-	buffer[13] = Threshold_RPM & 0xff;
-	buffer[14] = Threshold_Speed >> 8;
-	buffer[15] = Threshold_Speed & 0xff;
+	buffer[12] = inputConfig;
+	buffer[13] = thresholdRPM >> 8;
+	buffer[14] = thresholdRPM & 0xff;
+	buffer[15] = thresholdSpeed >> 8;
+	buffer[16] = thresholdSpeed & 0xff;
 
 	return HAL_I2C_Master_Transmit(hi2c, 0xA0, buffer, EEPROM_BUFFER_SIZE, 5);
 }
@@ -73,14 +75,14 @@ void Principal_Init(CAN_HandleTypeDef* hcan, I2C_HandleTypeDef* hi2c, TIM_Handle
 		Principal_Hard_Code_Config();
 
 	if(HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR1) == RTC_STORE_DATA)
-		Flag_RTC = RTC_OK;
+		flagRTC = RTC_OK;
 	else
-		Flag_RTC = RTC_Lost;
+		flagRTC = RTC_LOST;
 
-	Principal_Datalogger_Init(&Fatfs_Struct);
+	Principal_Datalogger_Init(&fatfsStruct);
 
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &ADC_Buffer[6], 7);
-	HAL_ADC_Start_DMA(&hadc2, (uint32_t*) &ADC_Buffer[0], 6);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &adcBuffer[6], 7);
+	HAL_ADC_Start_DMA(&hadc2, (uint32_t*) &adcBuffer[0], 6);
 	HAL_TIM_Base_Start_IT(htim);
 
 	Principal_CAN_Start(hcan);
@@ -96,26 +98,27 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 			if(length != 8)
 				break;
 
-			__LOAD_FREQ(data[1], Per_Msg[Analog_1_4]);
-			__LOAD_FREQ(data[2], Per_Msg[Analog_5_8]);
-			__LOAD_FREQ(data[3], Per_Msg[Analog_9_12]);
-			__LOAD_FREQ(data[4], Per_Msg[RTC_Msg]);
-			__LOAD_FREQ(data[5], Per_Msg[Verify_Msg]);
-			__LOAD_FREQ(data[6], Per_Msg[ECU_Save]);
-			__LOAD_FREQ(data[7], Per_Msg[PDM_Save]);
+			__BUFFER_TO_FREQ(data[1], perMsg[ANALOG_1_4]);
+			__BUFFER_TO_FREQ(data[2], perMsg[ANALOG_5_8]);
+			__BUFFER_TO_FREQ(data[3], perMsg[ANALOG_9_12]);
+			__BUFFER_TO_FREQ(data[4], perMsg[RTC_MSG]);
+			__BUFFER_TO_FREQ(data[5], perMsg[VERIFY_MSG]);
+			__BUFFER_TO_FREQ(data[6], perMsg[ECU_SAVE]);
+			__BUFFER_TO_FREQ(data[7], perMsg[PDM_SAVE]);
 
 			retVal = Save_EEPROM(hi2c);
 			break;
 
 		case 1:
-			if(length != 6)
+			if(length != 7)
 				break;
 
-			__LOAD_FREQ(data[1], Per_CAN[Analog_1_4]);
-			__LOAD_FREQ(data[2], Per_CAN[Analog_5_8]);
-			__LOAD_FREQ(data[3], Per_CAN[Analog_9_12]);
-			__LOAD_FREQ(data[4], Per_CAN[RTC_Msg]);
-			Input_Config = data[5];
+			__BUFFER_TO_FREQ(data[1], perCAN[ANALOG_1_4]);
+			__BUFFER_TO_FREQ(data[2], perCAN[ANALOG_5_8]);
+			__BUFFER_TO_FREQ(data[3], perCAN[ANALOG_9_12]);
+			__BUFFER_TO_FREQ(data[4], perCAN[RTC_MSG]);
+			__BUFFER_TO_FREQ(data[5], perCAN[VERIFY_MSG]);
+			inputConfig = data[6];
 
 			retVal = Save_EEPROM(hi2c);
 			break;
@@ -124,10 +127,10 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 			if(length != 5)
 				break;
 
-			Threshold_RPM	 = data[1] << 8;
-			Threshold_RPM	|= data[2] & 0xff;
-			Threshold_Speed  = data[3] << 8;
-			Threshold_Speed |= data[4] & 0xff;
+			thresholdRPM	 = data[1] << 8;
+			thresholdRPM	|= data[2] & 0xff;
+			thresholdSpeed	 = data[3] << 8;
+			thresholdSpeed	|= data[4] & 0xff;
 
 			retVal = Save_EEPROM(hi2c);
 			break;
@@ -136,17 +139,23 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 			if(length != 7)
 				break;
 
-			Date.Year	 = data[1];
-			Date.Month	 = data[2];
-			Date.Date	 = data[3];
-			Time.Hours	 = data[4];
-			Time.Minutes = data[5];
-			Time.Seconds = data[6];
+			rtcDate.Year	= data[1];
+			rtcDate.Month	= data[2];
+			rtcDate.Date	= data[3];
+			rtcTime.Hours	= data[4];
+			rtcTime.Minutes = data[5];
+			rtcTime.Seconds = data[6];
 
-			HAL_RTC_SetDate(&hrtc, &Date, RTC_FORMAT_BIN);
-			HAL_RTC_SetTime(&hrtc, &Time, RTC_FORMAT_BIN);
-			HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, RTC_STORE_DATA);
-			Flag_RTC = RTC_OK;
+			if((HAL_RTC_SetDate(&hrtc, &rtcDate, RTC_FORMAT_BIN) == HAL_OK)
+				&& (HAL_RTC_SetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN) == HAL_OK))
+			{
+				HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR1, RTC_STORE_DATA);
+				flagRTC = RTC_OK;
+				retVal = HAL_OK;
+			}
+			else
+				retVal = HAL_ERROR;
+
 			break;
 
 		default:
@@ -157,8 +166,26 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 }
 
 __weak void Principal_Hard_Code_Config(){
-	Per_Msg[Analog_1_4] = MSG_FREQ_20HZ;
-	Per_Msg[RTC_Msg] = MSG_FREQ_2HZ;
-	Threshold_RPM = 7000;
-	Threshold_Speed = 1;
+	perMsg[ANALOG_1_4] = MSG_FREQ_250HZ;
+	perMsg[ANALOG_5_8] = MSG_FREQ_500HZ;
+	perMsg[ANALOG_9_12] = MSG_DISABLED;
+	perMsg[RTC_MSG] = MSG_FREQ_2HZ;
+	perMsg[VERIFY_MSG] = MSG_FREQ_5HZ;
+	perMsg[BEACON_MSG] = MSG_FREQ_10HZ;
+	perMsg[ECU_SAVE] = MSG_FREQ_100HZ;
+	perMsg[PDM_SAVE] = MSG_FREQ_100HZ;
+
+	perCAN[ANALOG_1_4] = MSG_FREQ_10HZ;
+	perCAN[ANALOG_5_8] = MSG_FREQ_10HZ;
+	perCAN[ANALOG_9_12] = MSG_DISABLED;
+	perCAN[RTC_MSG] = MSG_FREQ_2HZ;
+	perCAN[VERIFY_MSG] = MSG_FREQ_5HZ;
+	perCAN[BEACON_MSG] = MSG_FREQ_5HZ;
+
+	inputConfig = INPUT_BEACON_PIN_0 | INPUT_DATALOGGER_PIN_1;
+
+	thresholdRPM = 7000;
+	thresholdSpeed = 1;
+
+	Save_EEPROM(&hi2c1);
 }

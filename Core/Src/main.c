@@ -137,66 +137,66 @@ int main(void)
   while (1)
   {
 	  //Checks if data is being saved and starts saving if conditions are met
-	  if(Flag_Datalogger == DL_No_Save)
-		  Principal_Datalogger_Start(Dir_String, Log_String, &Dir_Struct, &File_Struct);
+	  if(flagDatalogger == DL_NO_SAVE)
+		  Principal_Datalogger_Start(dirString, logString, &dirStruct, &fileStruct);
 
 	  //Checks card detect pin level change for datalogger initialization or deinitialization
-	  Principal_Card_Detection(&Fatfs_Struct, &Dir_Struct, &File_Struct);
+	  Principal_Card_Detection(&fatfsStruct, &dirStruct, &fileStruct);
 
 	  //Checks USB cable connection, if connected will disable logging
-	  if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET) && (Flag_Datalogger == DL_Save))
-		  Principal_Datalogger_Finish(&Dir_Struct, &File_Struct);
+	  if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET) && (flagDatalogger == DL_SAVE))
+		  Principal_Datalogger_Finish(&dirStruct, &fileStruct);
 
 	  //Analog inputs 1-4 CAN message
-	  if((Acc_Msg[Analog_1_4] >= Per_Msg[Analog_1_4]) && (Per_Msg[Analog_1_4] != 0))
+	  if((accMsg[ANALOG_1_4] >= perMsg[ANALOG_1_4]) && (perMsg[ANALOG_1_4] != MSG_DISABLED))
 	  {
-		  Acc_Msg[Analog_1_4] -= Per_Msg[Analog_1_4];
-		  Principal_Transmit_Msg(&hcan1, Analog_1_4);
+		  accMsg[ANALOG_1_4] -= perMsg[ANALOG_1_4];
+		  Principal_Transmit_Msg(&hcan1, ANALOG_1_4);
 	  }
 
 	  //Analog inputs 5-8 CAN message
-	  if((Acc_Msg[Analog_5_8] >= Per_Msg[Analog_5_8]) && (Per_Msg[Analog_5_8] != 0))
+	  if((accMsg[ANALOG_5_8] >= perMsg[ANALOG_5_8]) && (perMsg[ANALOG_5_8] != MSG_DISABLED))
 	  {
-		  Acc_Msg[Analog_5_8] -= Per_Msg[Analog_5_8];
-		  Principal_Transmit_Msg(&hcan1, Analog_5_8);
+		  accMsg[ANALOG_5_8] -= perMsg[ANALOG_5_8];
+		  Principal_Transmit_Msg(&hcan1, ANALOG_5_8);
 	  }
 
 	  //Analog inputs 9-12 CAN message
-	  if((Acc_Msg[Analog_9_12] >= Per_Msg[Analog_9_12]) && (Per_Msg[Analog_9_12] != 0))
+	  if((accMsg[ANALOG_9_12] >= perMsg[ANALOG_9_12]) && (perMsg[ANALOG_9_12] != MSG_DISABLED))
 	  {
-		  Acc_Msg[Analog_9_12] -= Per_Msg[Analog_9_12];
-		  Principal_Transmit_Msg(&hcan1, Analog_9_12);
+		  accMsg[ANALOG_9_12] -= perMsg[ANALOG_9_12];
+		  Principal_Transmit_Msg(&hcan1, ANALOG_9_12);
 	  }
 
 	  //RTC, both date and time
-	  if((Acc_Msg[RTC_Msg] >= Per_Msg[RTC_Msg]) && (Per_Msg[RTC_Msg] != 0))
+	  if((accMsg[RTC_MSG] >= perMsg[RTC_MSG]) && (perMsg[RTC_MSG] != MSG_DISABLED))
 	  {
-		  Acc_Msg[RTC_Msg] -= Per_Msg[RTC_Msg];
-		  Principal_Transmit_Msg(&hcan1, RTC_Msg);
+		  accMsg[RTC_MSG] -= perMsg[RTC_MSG];
+		  Principal_Transmit_Msg(&hcan1, RTC_MSG);
 	  }
 
 	  //Inputs and datalogger verify CAN message
-	  if((Acc_Msg[Verify_Msg] >= Per_Msg[Verify_Msg]) && (Per_Msg[Verify_Msg] != 0))
+	  if((accMsg[VERIFY_MSG] >= perMsg[VERIFY_MSG]) && (perMsg[VERIFY_MSG] != MSG_DISABLED))
 	  {
-		  Acc_Msg[Verify_Msg] -= Per_Msg[Verify_Msg];
-		  Principal_Transmit_Msg(&hcan1, Verify_Msg);
+		  accMsg[VERIFY_MSG] -= perMsg[VERIFY_MSG];
+		  Principal_Transmit_Msg(&hcan1, VERIFY_MSG);
 	  }
 
 	  //ECU saved data (no transmission)
-	  if((Acc_Msg[ECU_Save] >= Per_Msg[ECU_Save]) && (Per_Msg[ECU_Save] != 0))
+	  if((accMsg[ECU_SAVE] >= perMsg[ECU_SAVE]) && (perMsg[ECU_SAVE] != MSG_DISABLED))
 	  {
-		  Acc_Msg[ECU_Save] -= Per_Msg[ECU_Save];
-		  Principal_Transmit_Msg(&hcan1, ECU_Save);
+		  accMsg[ECU_SAVE] -= perMsg[ECU_SAVE];
+		  Principal_Transmit_Msg(&hcan1, ECU_SAVE);
 	  }
 
 	  //PDM saved data (no transmission)
-	  if((Acc_Msg[PDM_Save] >= Per_Msg[PDM_Save]) && (Per_Msg[PDM_Save] != 0))
+	  if((accMsg[PDM_SAVE] >= perMsg[PDM_SAVE]) && (perMsg[PDM_SAVE] != MSG_DISABLED))
 	  {
-		  Acc_Msg[PDM_Save] -= Per_Msg[PDM_Save];
-		  Principal_Transmit_Msg(&hcan1, PDM_Save);
+		  accMsg[PDM_SAVE] -= perMsg[PDM_SAVE];
+		  Principal_Transmit_Msg(&hcan1, PDM_SAVE);
 	  }
 
-	  if((Verify != 0) && (Verify_CAN != 0) && (Flag_Datalogger != DL_Error))
+	  if((verifyADC != 0) && (verifyCAN != 0) && (flagDatalogger != DL_ERROR))
 		  HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 

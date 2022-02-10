@@ -1,5 +1,5 @@
 principal_config.c:10:26:Load_EEPROM	48	static
-principal_config.c:44:26:Save_EEPROM	40	static
-principal_config.c:70:6:Principal_Init	24	static
-principal_config.c:89:19:Principal_Receive_Config	32	static
-principal_config.c:159:13:Principal_Hard_Code_Config	4	static
+principal_config.c:45:26:Save_EEPROM	48	static
+principal_config.c:72:6:Principal_Init	24	static
+principal_config.c:91:19:Principal_Receive_Config	32	static
+principal_config.c:168:13:Principal_Hard_Code_Config	8	static

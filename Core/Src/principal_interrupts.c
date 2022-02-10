@@ -9,45 +9,45 @@
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-	if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
+	if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, rxData) == HAL_OK)
 	{
-		Verify_CAN |= 2;
+		verifyCAN |= 2;
 
-		if((RxHeader.IDE == CAN_ID_STD) && (Flag_Datalogger == DL_Save))
-			Principal_Datalogger_Save_Buffer(RxHeader.StdId, RxHeader.DLC, RxData, &File_Struct);
+		if((rxHeader.IDE == CAN_ID_STD) && ((rxHeader.StdId & CAN_DAQ_MASK) == CAN_DAQ_FILTER) && (flagDatalogger == DL_SAVE))
+			Principal_Datalogger_Save_Buffer(rxHeader.StdId, rxHeader.DLC, rxData, &fileStruct);
 
-		else if(((RxHeader.ExtId & 0x1FFFF000) == 0x1E35C000) && (RxHeader.IDE == CAN_ID_EXT))
-			PDM_CAN_Process_Data(RxHeader.ExtId, RxHeader.DLC, RxData, &PDM_Readings);
+		else if(((rxHeader.ExtId & 0x1FFFF000) == 0x1E35C000) && (rxHeader.IDE == CAN_ID_EXT))
+			PDM_CAN_Process_Data(rxHeader.ExtId, rxHeader.DLC, rxData, &pdmReadings);
 
-		else if((RxHeader.ExtId == CONFIG_ID) && (RxHeader.IDE == CAN_ID_EXT))
-			Principal_Receive_Config(&hi2c1, RxData, RxHeader.DLC);
+		else if((rxHeader.ExtId == CONFIG_ID) && (rxHeader.IDE == CAN_ID_EXT))
+			Principal_Receive_Config(&hi2c1, rxData, rxHeader.DLC);
 
 		else
-			FT_CAN_ReceiveData(RxHeader.ExtId, RxHeader.DLC, RxData, &ECU_Data);
+			FT_CAN_ReceiveData(rxHeader.ExtId, rxHeader.DLC, rxData, &ecuData);
 	}
 
 	else
-		Verify_CAN &= 1;
+		verifyCAN &= 1;
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if(GPIO_Pin == EXTI0_Pin)
 	{
-		if((Input_Config & 0x01) == 0)
+		if((inputConfig & 0x01) == 0)
 			Principal_Beacon_Detect();
 
-		if((Input_Config & 0x02) == 0)
-			Principal_Datalogger_Button(&Dir_Struct, &File_Struct);
+		if((inputConfig & 0x02) == 0)
+			Principal_Datalogger_Button(&dirStruct, &fileStruct);
 	}
 
 	if(GPIO_Pin == EXTI1_Pin)
 	{
-		if((Input_Config & 0x01) == 1)
+		if((inputConfig & 0x01) == 1)
 			Principal_Beacon_Detect();
 
-		if((Input_Config & 0x02) == 2)
-			Principal_Datalogger_Button(&Dir_Struct, &File_Struct);
+		if((inputConfig & 0x02) == 2)
+			Principal_Datalogger_Button(&dirStruct, &fileStruct);
 	}
 }
 
@@ -55,20 +55,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance == TIM7)
 	{
-		Acc_Datalogger[0]++;
-		if(Acc_Datalogger[1] > 0) Acc_Datalogger[1]--;
+		accDatalogger[0]++;
+		if(accDatalogger[1] > 0) accDatalogger[1]--;
 
-		Acc_CAN[Analog_1_4]++;
-		Acc_CAN[Analog_5_8]++;
-		Acc_CAN[Analog_9_12]++;
-		Acc_CAN[RTC_Msg]++;
+		accCAN[ANALOG_1_4]++;
+		accCAN[ANALOG_5_8]++;
+		accCAN[ANALOG_9_12]++;
+		accCAN[RTC_MSG]++;
+		accCAN[VERIFY_MSG]++;
+		accCAN[BEACON_MSG]++;
 
-		Acc_Msg[Analog_1_4]++;
-		Acc_Msg[Analog_5_8]++;
-		Acc_Msg[Analog_9_12]++;
-		Acc_Msg[RTC_Msg]++;
-		Acc_Msg[Verify_Msg]++;
-		Acc_Msg[ECU_Save]++;
-		Acc_Msg[PDM_Save]++;
+		accMsg[ANALOG_1_4]++;
+		accMsg[ANALOG_5_8]++;
+		accMsg[ANALOG_9_12]++;
+		accMsg[RTC_MSG]++;
+		accMsg[VERIFY_MSG]++;
+		accMsg[BEACON_MSG]++;
+		accMsg[ECU_SAVE]++;
+		accMsg[PDM_SAVE]++;
+
+		accLap++;
 	}
 }
