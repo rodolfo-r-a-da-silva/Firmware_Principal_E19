@@ -117,19 +117,20 @@ FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct)
 	else
 		flagDatalogger = DL_NO_SAVE;
 
-	verifyDatalogger = 0;
-
 	return retVal;
 }
 
-void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, FIL* file_struct)
+void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, DIR* dir_struct, FIL* file_struct)
 {
 //	uint8_t buffer[5 + data_length];
 	UINT byte;
 	FRESULT verify[2];
 
 	if(HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin) == GPIO_PIN_SET)
+	{
+		Principal_Datalogger_Finish(dir_struct, file_struct);
 		return;
+	}
 
 	else if(HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET)
 		return;
@@ -160,6 +161,8 @@ void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uin
 
 	if(dataloggerBufferPosition > DATALOGGER_SAVE_THR)
 	{
+		dataloggerBufferPosition++;
+
 		verify[0] = f_write(file_struct, dataloggerBuffer, dataloggerBufferPosition, &byte);
 		verify[1] = f_sync(file_struct);
 
@@ -167,9 +170,7 @@ void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uin
 		res[4] = verify[1];
 
 		if((verify[0] == FR_OK) && (verify[1] == FR_OK) && (dataloggerBufferPosition == byte))
-			verifyDatalogger = 1;
-		else
-			verifyDatalogger = 0;
+			Principal_Datalogger_Finish(dir_struct, file_struct);
 
 		dataloggerBufferPosition = 0;
 	}
@@ -181,10 +182,10 @@ void Principal_Datalogger_Button(DIR* dir_struct, FIL* file_struct)
 	{
 		accDatalogger[1] = BUTTON_COOLDOWN;
 
-		if(flagDatalogger == DL_NO_SAVE)
+		if((flagDatalogger == DL_NO_SAVE) && (HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_RESET))
 			flagDatalogger = DL_BUT_PRESS;
 
-		else
+		else if(flagDatalogger == DL_SAVE)
 			Principal_Datalogger_Finish(dir_struct, file_struct);
 	}
 }
@@ -202,6 +203,9 @@ void Principal_Card_Detection(FATFS* fatfs_struct, DIR* dir_struct, FIL* file_st
 
 void Principal_Beacon_Detect()
 {
+	if(accLap < thresholdBeacon)
+		return;
+
 	lapNumber++;
 
 	Principal_Transmit_Msg(&hcan1, BEACON_MSG);

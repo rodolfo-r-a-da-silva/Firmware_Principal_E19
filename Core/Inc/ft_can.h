@@ -16,7 +16,7 @@
 
 //#define FT_CAN_LAMBDA
 //#define FT_CAN_EGT
-//#define FT_CAN_TIMING
+#define FT_CAN_TIMING
 #define FT_CAN_EXTRA
 //#define FT_CAN_EXTERNAL_IGNITION
 //#define  FT_CAN_INJECTION

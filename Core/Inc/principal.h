@@ -23,21 +23,21 @@
 #define CONFIG_ID		0
 #define FIRST_ID		1
 #define BEACON_ID		100
-#define ECU_FIRST_ID	26
-#define PDM_FIRST_ID	50
+#define ECU_FIRST_ID	0x01
+#define PDM_FIRST_ID	0x0A
 
 //CONFIGURATION
 #define EEPROM_BUFFER_SIZE	17
 
 //DATA
 #define ADC_THRESHOLD		30
-#define NBR_OF_CHANNELS		13
+#define NBR_OF_CHANNELS		19
 #define NBR_OF_MSGS			6
 #define NBR_OF_LOCAL_MSGS	2
 
 //DATALOGGER
 #define BUTTON_COOLDOWN			500
-#define DATALOGGER_BUFFER_SIZE	512
+#define DATALOGGER_BUFFER_SIZE	4096
 #define DATALOGGER_MSG_MAX_SIZE	13
 #define DATALOGGER_SAVE_THR		DATALOGGER_BUFFER_SIZE - DATALOGGER_MSG_MAX_SIZE
 #define DIRECTORY_STRING_SIZE	9
@@ -181,6 +181,11 @@ typedef enum{
 	RTC_OK = 0x00,
 	RTC_LOST
 }RTC_Flag_TypeDef;
+
+typedef enum{
+	USB_CONNECTED = 0x00,
+	USB_DISCONNECTED
+}USB_Flag_Typedef;
 /*END ENUMS*/
 
 /*BEGIN GLOBAL VARIABLES*/
@@ -213,6 +218,7 @@ uint8_t
 	dataloggerBuffer[DATALOGGER_BUFFER_SIZE];
 uint16_t dataloggerBufferPosition;
 int16_t
+	thresholdBeacon,
 	thresholdRPM,
 	thresholdSpeed;
 DIR dirStruct;
@@ -222,9 +228,8 @@ TCHAR dirString[DIRECTORY_STRING_SIZE];
 TCHAR logString[LOG_STRING_SIZE];
 
 //FLAGS
-uint8_t
-	flagCAN,
-	flagUSB;
+uint8_t flagCAN;
+USB_Flag_Typedef flagUSB;
 DL_Flag_TypeDef flagDatalogger;
 RTC_Flag_TypeDef flagRTC;
 
@@ -246,14 +251,14 @@ uint32_t
 	accLap;
 
 //VERIFYS
-uint8_t
-	verifyDatalogger,
-	verifyCAN;
+uint8_t	verifyCAN;
 uint16_t verifyADC;
 /*END GLOBAL VARIABLES*/
 
 /*BEGIN FUNCTION PROTOTYPES*/
 //CAN
+void Principal_Verify();
+
 void Principal_CAN_Start(CAN_HandleTypeDef* hcan);
 
 void Principal_Transmit_Msg(CAN_HandleTypeDef* hcan, uint8_t msg_number);
@@ -272,7 +277,7 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 
 FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct);
 
-void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, FIL* file_struct);
+void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, DIR* dir_struct, FIL* file_struct);
 
 void Principal_Datalogger_Button(DIR* dir_struct, FIL* file_struct);
 

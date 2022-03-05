@@ -137,7 +137,7 @@ int main(void)
   while (1)
   {
 	  //Checks if data is being saved and starts saving if conditions are met
-	  if(flagDatalogger == DL_NO_SAVE)
+	  if((flagDatalogger == DL_NO_SAVE) || (flagDatalogger == DL_BUT_PRESS))
 		  Principal_Datalogger_Start(dirString, logString, &dirStruct, &fileStruct);
 
 	  //Checks card detect pin level change for datalogger initialization or deinitialization
@@ -196,7 +196,7 @@ int main(void)
 		  Principal_Transmit_Msg(&hcan1, PDM_SAVE);
 	  }
 
-	  if((verifyADC != 0) && (verifyCAN != 0) && (flagDatalogger != DL_ERROR))
+	  if((verifyCAN != 0) && (flagDatalogger != DL_ERROR))
 		  HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 

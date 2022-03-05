@@ -12,12 +12,14 @@ static HAL_StatusTypeDef Load_EEPROM(I2C_HandleTypeDef* hi2c)
 	uint8_t buffer[EEPROM_BUFFER_SIZE];
 	HAL_StatusTypeDef retVal;
 
-	retVal = HAL_I2C_Master_Transmit(hi2c, 0xA0, 0x00, 1, 5);
+	retVal = HAL_I2C_Mem_Read(hi2c, 0xA0, 0x0000, 1, buffer, EEPROM_BUFFER_SIZE, 5);
 
-	if(retVal == HAL_OK)
-		retVal = HAL_I2C_Master_Receive(hi2c, 0xA1, buffer, EEPROM_BUFFER_SIZE, 5);
-	else
+//	retVal = HAL_I2C_Master_Transmit(hi2c, 0xA0, 0x00, 1, 5);
+
+	if(retVal != HAL_OK)
 		return retVal;
+//	else
+//		retVal = HAL_I2C_Master_Receive(hi2c, 0xA1, buffer, EEPROM_BUFFER_SIZE, 5);
 
 	__BUFFER_TO_FREQ(buffer[0], perMsg[ANALOG_1_4]);
 	__BUFFER_TO_FREQ(buffer[1], perMsg[ANALOG_5_8]);
@@ -34,10 +36,12 @@ static HAL_StatusTypeDef Load_EEPROM(I2C_HandleTypeDef* hi2c)
 	__BUFFER_TO_FREQ(buffer[10], perCAN[VERIFY_MSG]);
 
 	inputConfig 	 = buffer[12];
-	thresholdRPM	 = buffer[13] << 8;
-	thresholdRPM	|= buffer[14] & 0xff;
-	thresholdSpeed	 = buffer[15] << 8;
-	thresholdSpeed |= buffer[16] & 0xff;
+	thresholdBeacon	 = buffer[13] << 8;
+	thresholdBeacon |= buffer[14] & 0xff;
+	thresholdRPM	 = buffer[15] << 8;
+	thresholdRPM	|= buffer[16] & 0xff;
+	thresholdSpeed	 = buffer[17] << 8;
+	thresholdSpeed	|= buffer[18] & 0xff;
 
 	return retVal;
 }
@@ -61,12 +65,16 @@ static HAL_StatusTypeDef Save_EEPROM(I2C_HandleTypeDef* hi2c)
 	__FREQ_TO_BUFFER(buffer[10], perCAN[VERIFY_MSG]);
 
 	buffer[12] = inputConfig;
-	buffer[13] = thresholdRPM >> 8;
-	buffer[14] = thresholdRPM & 0xff;
-	buffer[15] = thresholdSpeed >> 8;
-	buffer[16] = thresholdSpeed & 0xff;
+	buffer[13] = thresholdBeacon >> 8;
+	buffer[14] = thresholdBeacon & 0xff;
+	buffer[15] = thresholdRPM >> 8;
+	buffer[16] = thresholdRPM & 0xff;
+	buffer[17] = thresholdSpeed >> 8;
+	buffer[18] = thresholdSpeed & 0xff;
 
-	return HAL_I2C_Master_Transmit(hi2c, 0xA0, buffer, EEPROM_BUFFER_SIZE, 5);
+	return HAL_I2C_Mem_Write(hi2c, 0xA0, 0x0000, 1, buffer, EEPROM_BUFFER_SIZE, 5);
+
+//	return HAL_I2C_Master_Transmit(hi2c, 0xA0, buffer, EEPROM_BUFFER_SIZE, 5);
 }
 
 void Principal_Init(CAN_HandleTypeDef* hcan, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim)
@@ -124,13 +132,15 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 			break;
 
 		case 2:
-			if(length != 5)
+			if(length != 7)
 				break;
 
-			thresholdRPM	 = data[1] << 8;
-			thresholdRPM	|= data[2] & 0xff;
-			thresholdSpeed	 = data[3] << 8;
-			thresholdSpeed	|= data[4] & 0xff;
+			thresholdBeacon  = data[1] << 8;
+			thresholdBeacon |= data[2] & 0xff;
+			thresholdRPM	 = data[3] << 8;
+			thresholdRPM	|= data[4] & 0xff;
+			thresholdSpeed	 = data[5] << 8;
+			thresholdSpeed	|= data[6] & 0xff;
 
 			retVal = Save_EEPROM(hi2c);
 			break;
@@ -184,6 +194,7 @@ __weak void Principal_Hard_Code_Config(){
 
 	inputConfig = INPUT_BEACON_PIN_0 | INPUT_DATALOGGER_PIN_1;
 
+	thresholdBeacon = 1000;
 	thresholdRPM = 7000;
 	thresholdSpeed = 1;
 

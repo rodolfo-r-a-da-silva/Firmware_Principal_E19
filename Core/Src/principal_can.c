@@ -7,17 +7,15 @@
 
 #include "principal.h"
 
-static void Verify_Data()
+void Principal_Verify()
 {
 	verifyADC = 0;
 
 	for(uint8_t i = 0; i < NBR_OF_CHANNELS; i++)
-		if(adcBuffer[i] >= ADC_THRESHOLD)
+		if(adcBuffer[i] > ADC_THRESHOLD)
 			verifyADC |= (1 << i);
 
-	HAL_GPIO_TogglePin(LED_OK);
-
-	if(verifyDatalogger == 1)
+	if(flagDatalogger == DL_SAVE)
 		HAL_GPIO_WritePin(LED_DATALOGGER, GPIO_PIN_SET);
 	else
 		HAL_GPIO_WritePin(LED_DATALOGGER, GPIO_PIN_RESET);
@@ -35,14 +33,17 @@ static void Verify_Data()
 
 static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 {
+	if((verifyADC & 0x000f) == 0x0000)
+	{
+		accCAN[ANALOG_1_4] = 0;
+		return;
+	}
+
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
 	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + ANALOG_1_4);
 	txHeader.DLC = 8;
-
-	if((verifyADC & 0x000f) == 0)
-		return;
 
 	txData[0] = adcBuffer[0] >> 8;
 	txData[1] = adcBuffer[0] & 0xff;
@@ -54,7 +55,7 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 	txData[7] = adcBuffer[3] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
 
 	if((accCAN[ANALOG_1_4] >= perCAN[ANALOG_1_4]) && (perCAN[ANALOG_1_4] != MSG_DISABLED))
 	{
@@ -72,14 +73,17 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 
 static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 {
+	if((verifyADC & 0x00f0) == 0x0000)
+	{
+		accCAN[ANALOG_5_8] = 0;
+		return;
+	}
+
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
 	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + ANALOG_5_8);
 	txHeader.DLC = 8;
-
-	if((verifyADC & 0x00f0) == 0)
-		return;
 
 	txData[0] = adcBuffer[4] >> 8;
 	txData[1] = adcBuffer[4] & 0xff;
@@ -91,7 +95,7 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 	txData[7] = adcBuffer[7] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
 
 	if((accCAN[ANALOG_5_8] >= perCAN[ANALOG_5_8]) && (perCAN[ANALOG_5_8] != MSG_DISABLED))
 	{
@@ -109,6 +113,12 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 
 static void Tx_Analog_9_12(CAN_HandleTypeDef* hcan)
 {
+	if((verifyADC & 0x0f00) == 0x0000)
+	{
+		accCAN[ANALOG_9_12] = 0;
+		return;
+	}
+
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
@@ -128,7 +138,7 @@ static void Tx_Analog_9_12(CAN_HandleTypeDef* hcan)
 	txData[7] = adcBuffer[11] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
 
 	if((accCAN[ANALOG_9_12] >= perCAN[ANALOG_9_12]) && (perCAN[ANALOG_9_12] != MSG_DISABLED))
 	{
@@ -165,7 +175,7 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 	txData[7] = adcBuffer[12] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
 
 	if((accCAN[RTC_MSG] >= perCAN[RTC_MSG]) && (perCAN[RTC_MSG] != MSG_DISABLED))
 	{
@@ -189,11 +199,13 @@ static void Tx_Verify(CAN_HandleTypeDef* hcan)
 	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + VERIFY_MSG);
 	txHeader.DLC = 8;
 
-	Verify_Data();
+	Principal_Verify();
 
-	txData[0]  = verifyADC >> 8;
-	txData[1]  = verifyADC & 0x0f;
-	txData[1] |= verifyDatalogger << 4;
+	txData[0] = verifyADC & 0xff;
+	txData[1] = (verifyADC >> 8) & 0x0f;
+
+	if(flagDatalogger == DL_SAVE)
+		txData[1] |= (1 << 4);
 
 	if(flagRTC == RTC_OK)
 		txData[1] |= (1 << 5);
@@ -206,7 +218,7 @@ static void Tx_Verify(CAN_HandleTypeDef* hcan)
 	__FREQ_TO_BUFFER(txData[7], perMsg[ECU_SAVE]);
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
 
 	if((accCAN[VERIFY_MSG] >= perCAN[VERIFY_MSG]) && (perCAN[VERIFY_MSG] != MSG_DISABLED))
 	{
@@ -245,7 +257,7 @@ static void Tx_Beacon(CAN_HandleTypeDef* hcan)
 	txData[4] = buffer[2] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &fileStruct);
+		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
 
 	if((accCAN[BEACON_MSG] >= perCAN[BEACON_MSG]) && (perCAN[BEACON_MSG] != MSG_DISABLED))
 	{
@@ -279,7 +291,7 @@ static void Save_PDM()
 	buffer[6] = pdmReadings.Current_Buffer[3] << 8;
 	buffer[7] = pdmReadings.Current_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = PDM_FIRST_ID + 1;
 	length = 8;
@@ -293,7 +305,7 @@ static void Save_PDM()
 	buffer[6] = pdmReadings.Current_Buffer[7] << 8;
 	buffer[7] = pdmReadings.Current_Buffer[7] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = PDM_FIRST_ID + 2;
 	length = 8;
@@ -307,7 +319,7 @@ static void Save_PDM()
 	buffer[6] = pdmReadings.Current_Buffer[11] << 8;
 	buffer[7] = pdmReadings.Current_Buffer[11] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = PDM_FIRST_ID + 3;
 	length = 8;
@@ -321,7 +333,7 @@ static void Save_PDM()
 	buffer[6] = pdmReadings.Current_Buffer[15] << 8;
 	buffer[7] = pdmReadings.Current_Buffer[15] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = PDM_FIRST_ID + 4;
 	length = 8;
@@ -335,7 +347,7 @@ static void Save_PDM()
 	buffer[6] = pdmReadings.Tempetature_Buffer[3] << 8;
 	buffer[7] = pdmReadings.Tempetature_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = PDM_FIRST_ID + 5;
 	length = 8;
@@ -349,7 +361,7 @@ static void Save_PDM()
 	buffer[6] = pdmReadings.Tempetature_Buffer[7] << 8;
 	buffer[7] = pdmReadings.Tempetature_Buffer[7] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = PDM_FIRST_ID + 6;
 	length = 8;
@@ -363,7 +375,7 @@ static void Save_PDM()
 	buffer[6] = pdmReadings.Duty_Cycle_Buffer[3] << 8;
 	buffer[7] = pdmReadings.Duty_Cycle_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = PDM_FIRST_ID + 7;
 	length = 4;
@@ -373,7 +385,7 @@ static void Save_PDM()
 	buffer[2] = pdmReadings.Output_Verify << 8;
 	buffer[3] = pdmReadings.Output_Verify & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 }
 
 static void Save_ECU()
@@ -395,7 +407,7 @@ static void Save_ECU()
 	buffer[6] = ecuData.ect >> 8;
 	buffer[7] = ecuData.ect & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = ECU_FIRST_ID + 1;
 	length = 8;
@@ -409,7 +421,7 @@ static void Save_ECU()
 	buffer[6] = ecuData.coolant_pressure >> 8;
 	buffer[7] = ecuData.coolant_pressure & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = ECU_FIRST_ID + 2;
 	length = 8;
@@ -423,10 +435,10 @@ static void Save_ECU()
 	buffer[6] = ecuData.wheel_speed_rl;
 	buffer[7] = ecuData.wheel_speed_rr;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	id = ECU_FIRST_ID + 3;
-	length = 6;
+	length = 8;
 
 	buffer[0] = ecuData.battery_voltage >> 8;
 	buffer[1] = ecuData.battery_voltage & 0xff;
@@ -434,8 +446,10 @@ static void Save_ECU()
 	buffer[3] = ecuData.total_fuel_flow & 0xff;
 	buffer[4] = ecuData.gear & 0xff;
 	buffer[5] = ecuData.electro_fan & 0xff;
+	buffer[6] = ecuData.injection_bank_a_time >> 8;
+	buffer[7] = ecuData.injection_bank_a_time & 0xff;
 
-	Principal_Datalogger_Save_Buffer(id, length, buffer, &fileStruct);
+	Principal_Datalogger_Save_Buffer(id, length, buffer, &dirStruct, &fileStruct);
 
 	return;
 }
