@@ -1,2 +1,2 @@
-ccsbcs.c:275:7:ff_convert	24	static
-ccsbcs.c:303:7:ff_wtoupper	32	static
+../Middlewares/Third_Party/FatFs/src/option/ccsbcs.c:275:7:ff_convert	24	static
+../Middlewares/Third_Party/FatFs/src/option/ccsbcs.c:303:7:ff_wtoupper	32	static
