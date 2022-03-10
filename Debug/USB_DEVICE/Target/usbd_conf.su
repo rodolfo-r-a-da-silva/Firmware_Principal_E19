@@ -26,7 +26,7 @@
 ../USB_DEVICE/Target/usbd_conf.c:588:20:USBD_LL_PrepareReceive	32	static
 ../USB_DEVICE/Target/usbd_conf.c:606:10:USBD_LL_GetRxDataSize	16	static
 ../USB_DEVICE/Target/usbd_conf.c:617:6:HAL_PCDEx_LPM_Callback	16	static
-../USB_DEVICE/Target/usbd_conf.c:652:7:USBD_static_malloc	16	static
-../USB_DEVICE/Target/usbd_conf.c:663:6:USBD_static_free	16	static
-../USB_DEVICE/Target/usbd_conf.c:673:6:USBD_LL_Delay	16	static
-../USB_DEVICE/Target/usbd_conf.c:683:20:USBD_Get_USB_Status	24	static
+../USB_DEVICE/Target/usbd_conf.c:668:7:USBD_static_malloc	16	static
+../USB_DEVICE/Target/usbd_conf.c:679:6:USBD_static_free	16	static
+../USB_DEVICE/Target/usbd_conf.c:689:6:USBD_LL_Delay	16	static
+../USB_DEVICE/Target/usbd_conf.c:699:20:USBD_Get_USB_Status	24	static
