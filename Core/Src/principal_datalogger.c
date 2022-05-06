@@ -9,8 +9,6 @@
 #include "stdio.h"
 #include "string.h"
 
-FRESULT res[5];
-
 FRESULT Principal_Datalogger_Init(FATFS* fatfs_struct)
 {
 	FRESULT retVal = FR_OK;
@@ -48,6 +46,7 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 
 	if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET)
 			|| (flagRTC != RTC_OK)
+			|| (accDatalogger[DL_ACC_COOLDOWN] > 0)
 			|| ((flagDatalogger != DL_BUT_PRESS)
 			&& (ecuData.rpm < thresholdRPM)
 			&& (ecuData.wheel_speed_fl < thresholdSpeed)
@@ -56,22 +55,22 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 			&& (ecuData.wheel_speed_rr < thresholdSpeed)))
 		return FR_OK;
 
+	accDatalogger[DL_ACC_COOLDOWN] = DATALOGGER_BUTTON_COOLDOWN;
+
 	RTC_DateTypeDef sDate;
 	RTC_TimeTypeDef sTime;
 
 	dataloggerBufferPosition = 0;
-	memset(dataloggerBuffer, '\0', DATALOGGER_BUFFER_SIZE);
 
 	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
-	sprintf(dir, "%02d_%02d_%02d", sDate.Year, sDate.Month, sDate.Date);
+	sprintf(dir, "%02d-%02d-%02d", sDate.Year, sDate.Month, sDate.Date);
 
-	sprintf(file, "%s/%02d_%02d_%02d_%02d_%02d_%02d.sd", dir, sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes, sTime.Seconds);
+//	sprintf(file, "%s/%02d-%02d-%02d_%02d-%02d-%02d.sd", dir, sDate.Year, sDate.Month, sDate.Date, sTime.Hours, sTime.Minutes, sTime.Seconds);
+	sprintf(file, "%s/%s_%02d-%02d-%02d.sd", dir, dir, sTime.Hours, sTime.Minutes, sTime.Seconds);
 
 	retVal = f_mkdir(dir);
-
-	res[0] = retVal;
 
 	if((retVal != FR_OK) && (retVal != FR_EXIST))
 	{
@@ -81,8 +80,6 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 
 	retVal = f_opendir(dir_struct, dir);
 
-	res[1] = retVal;
-
 	if(retVal != FR_OK)
 	{
 		flagDatalogger = DL_ERROR;
@@ -91,10 +88,12 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 
 	retVal = f_open(file_struct, file, FA_WRITE | FA_CREATE_ALWAYS);
 
-	res[2] = retVal;
-
 	if(retVal == FR_OK)
+	{
 		flagDatalogger = DL_SAVE;
+		accDatalogger[DL_ACC_TIMING] = 0;
+		accDatalogger[DL_ACC_TIMEOUT] = 0;
+	}
 	else
 		flagDatalogger = DL_ERROR;
 
@@ -105,83 +104,76 @@ FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct)
 {
 	FRESULT retVal = FR_OK;
 
+	while(HAL_SD_GetCardState(&hsd) == HAL_SD_STATE_BUSY);
+
 	retVal = f_close(file_struct);
 	f_closedir(dir_struct);
 
 	if(HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin) == GPIO_PIN_SET)
 	{
-		f_mount(0, SDPath, 0);
+		retVal = f_mount(0, SDPath, 0);
+
 		flagDatalogger = DL_NO_CARD;
 	}
 
-	else
+	else if(flagDatalogger != DL_ERROR)
 		flagDatalogger = DL_NO_SAVE;
+
+	accDatalogger[DL_ACC_COOLDOWN] = DATALOGGER_BUTTON_COOLDOWN;
 
 	return retVal;
 }
 
 void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, DIR* dir_struct, FIL* file_struct)
 {
-//	uint8_t buffer[5 + data_length];
-	UINT byte;
+	uint8_t buffer[5 + data_length];
+	UINT writeSize;
 	FRESULT verify[2];
 
-	if(HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin) == GPIO_PIN_SET)
+	if((HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin) == GPIO_PIN_SET)
+		|| (HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET))
 	{
 		Principal_Datalogger_Finish(dir_struct, file_struct);
 		return;
 	}
 
-	else if(HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET)
-		return;
+	buffer[0] = 'D';
+	buffer[1] = 'L';
+	buffer[2] = data_id & 0xff;
+	buffer[3] = data_length;
+	buffer[4] = accDatalogger[DL_ACC_TIMING];
 
-//	buffer[0] = 'D';
-//	buffer[1] = 'L';
-//	buffer[2] = data_id & 0xff;
-//	buffer[3] = data_length;
-//	buffer[4] = accDatalogger[0];
+	accDatalogger[DL_ACC_TIMING] = 0;
 
-	dataloggerBuffer[dataloggerBufferPosition++] = 'D';
-	dataloggerBuffer[dataloggerBufferPosition++] = 'L';
-	dataloggerBuffer[dataloggerBufferPosition++] = data_id & 0xff;
-	dataloggerBuffer[dataloggerBufferPosition++] = data_length;
-	dataloggerBuffer[dataloggerBufferPosition++] = accDatalogger[0];
+	for(uint8_t i = 0; i < data_length; i++)
+		buffer[5 + i] = data_buffer[i];
 
-	accDatalogger[0] = 0;
+	memcpy(dataloggerBuffer + dataloggerBufferPosition, buffer, 5 + data_length);
 
-//	for(uint8_t i = 0; i < data_length; i++)
-//		buffer[5 + i] = data_buffer[i];
-//
-//	memcpy(dataloggerBuffer + dataloggerBufferPosition, buffer, 5 + data_length);
-//
-//	dataloggerBufferPosition += (5 + data_length);
+	dataloggerBufferPosition += (5 + data_length);
 
-	for(uint8_t i = 0; i < data_length; i++, dataloggerBufferPosition++)
-		dataloggerBuffer[dataloggerBufferPosition] = data_buffer[i];
-
-	if(dataloggerBufferPosition > DATALOGGER_SAVE_THR)
+	if((dataloggerBufferPosition > DATALOGGER_SAVE_THR) || (accDatalogger[DL_ACC_TIMEOUT] > DATALOGGER_SAVE_TIME_THR))
 	{
 		dataloggerBufferPosition++;
 
-		verify[0] = f_write(file_struct, dataloggerBuffer, dataloggerBufferPosition, &byte);
+		verify[0] = f_write(file_struct, dataloggerBuffer, dataloggerBufferPosition, &writeSize);
 		verify[1] = f_sync(file_struct);
 
-		res[3] = verify[0];
-		res[4] = verify[1];
-
-		if((verify[0] == FR_OK) && (verify[1] == FR_OK) && (dataloggerBufferPosition == byte))
+		if(((verify[0] != FR_OK) || (verify[1] != FR_OK) || (writeSize != dataloggerBufferPosition)) && (flagDatalogger != DL_SAVE))
+		{
+			flagDatalogger = DL_ERROR;
 			Principal_Datalogger_Finish(dir_struct, file_struct);
+		}
 
 		dataloggerBufferPosition = 0;
+		accDatalogger[DL_ACC_TIMEOUT] = 0;
 	}
 }
 
 void Principal_Datalogger_Button(DIR* dir_struct, FIL* file_struct)
 {
-	if(accDatalogger[1] == 0)
+	if(accDatalogger[DL_ACC_COOLDOWN] == 0)
 	{
-		accDatalogger[1] = BUTTON_COOLDOWN;
-
 		if((flagDatalogger == DL_NO_SAVE) && (HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_RESET))
 			flagDatalogger = DL_BUT_PRESS;
 
@@ -194,7 +186,7 @@ void Principal_Card_Detection(FATFS* fatfs_struct, DIR* dir_struct, FIL* file_st
 {
 	GPIO_PinState cd_pin = HAL_GPIO_ReadPin(SDIO_CD_GPIO_Port, SDIO_CD_Pin);
 
-	if((cd_pin == GPIO_PIN_SET) && ((flagDatalogger == DL_SAVE) || (flagDatalogger == DL_ERROR)))
+	if((cd_pin == GPIO_PIN_SET) && (flagDatalogger != DL_NO_CARD))
 		Principal_Datalogger_Finish(dir_struct, file_struct);
 
 	else if((cd_pin == GPIO_PIN_RESET) && (flagDatalogger == DL_NO_CARD))

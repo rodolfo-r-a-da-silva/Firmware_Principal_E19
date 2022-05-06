@@ -55,7 +55,7 @@ uint16_t
 	perCAN[NBR_OF_MSGS],
 	perMsg[NBR_OF_MSGS + NBR_OF_LOCAL_MSGS];
 uint32_t
-	accDatalogger[2],
+	accDatalogger[3],
 	accCAN[NBR_OF_MSGS],
 	accMsg[NBR_OF_MSGS + NBR_OF_LOCAL_MSGS],
 	accLap;

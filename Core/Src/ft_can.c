@@ -7,10 +7,12 @@
 
 #include "ft_can.h"
 
+static void FT_CAN_ProcessData(FT_Data* FT_Data_Struct);
+
 HAL_StatusTypeDef FT_CAN_FilterConfig(CAN_HandleTypeDef *hcan, uint16_t FT_Product, uint8_t filter_bank_position, uint32_t Filter_FIFO)
 {
 	CAN_FilterTypeDef sFilterConfig;
-	uint32_t filter_id = FT_Product << 13, mask_id = 0x1FF80000;
+	uint32_t filter_id = FT_Product << 19, mask_id = 0x1FF80000;
 
 	sFilterConfig.FilterBank = filter_bank_position;
 	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
@@ -26,7 +28,234 @@ HAL_StatusTypeDef FT_CAN_FilterConfig(CAN_HandleTypeDef *hcan, uint16_t FT_Produ
 	return HAL_CAN_ConfigFilter(hcan, &sFilterConfig);
 }
 
-#ifndef FT_CAN_SIMPLE
+void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data* FT_Data_Struct)
+{
+	uint8_t buffer[8];
+	uint8_t DLC = pRxHeader->DLC;
+	uint32_t ExtId = pRxHeader->ExtId >> 19;
+
+	if(	   (ExtId != FT_Gear_Controller)
+		&& (ExtId != FT_Knock_Meter)
+		&& (ExtId != FT_Boost_Controller2)
+		&& (ExtId != FT_Injector_Driver)
+		&& (ExtId != FT_WBO2_Nano)
+		&& (ExtId != FT_WBO2_Slim)
+		&& (ExtId != FT_Alcohol_O2)
+		&& (ExtId != FTSpark)
+		&& (ExtId != FT_Switchpad)
+		&& (ExtId != FT500)
+		&& (ExtId != FT600)
+		&& (pRxHeader->IDE != CAN_ID_EXT))
+		return;
+
+	ExtId = pRxHeader->ExtId;
+
+	for(uint8_t i = 0; i < DLC; i++)
+		buffer[i] = pData[i];
+
+	if((((ExtId / 0x800) & 0x07) == 0x00))// || (((ExtId / 0x800) & 0x07) == 0x01))
+	{
+		if((ExtId & 0xFFF) == 0x600)
+		{
+			FT_Data_Struct->tps  = buffer[0] << 8;
+			FT_Data_Struct->tps |= buffer[1];
+			FT_Data_Struct->map  = buffer[2] << 8;
+			FT_Data_Struct->map |= buffer[3];
+			FT_Data_Struct->iat  = buffer[4] << 8;
+			FT_Data_Struct->iat |= buffer[5];
+			FT_Data_Struct->ect  = buffer[6] << 8;
+			FT_Data_Struct->ect |= buffer[7];
+
+			return;
+		}
+		else if((ExtId & 0xFFF) == 0x601)
+		{
+			FT_Data_Struct->oil_pressure  	  = buffer[0] << 8;
+			FT_Data_Struct->oil_pressure 	 |= buffer[1];
+			FT_Data_Struct->fuel_pressure 	  = buffer[2] << 8;
+			FT_Data_Struct->fuel_pressure 	 |= buffer[3];
+			FT_Data_Struct->coolant_pressure  = buffer[4] << 8;
+			FT_Data_Struct->coolant_pressure |= buffer[5];
+			FT_Data_Struct->gear  			  = buffer[6] << 8;
+			FT_Data_Struct->gear 			 |= buffer[7];
+
+			return;
+		}
+		else if((ExtId & 0xFFF) == 0x602)
+		{
+			FT_Data_Struct->lambda  		 = buffer[0] << 8;
+			FT_Data_Struct->lambda 			|= buffer[1];
+			FT_Data_Struct->rpm  			 = buffer[2] << 8;
+			FT_Data_Struct->rpm 			|= buffer[3];
+			FT_Data_Struct->oil_temperature  = buffer[4] << 8;
+			FT_Data_Struct->oil_temperature |= buffer[5];
+			FT_Data_Struct->pit_limiter  	 = buffer[6] << 8;
+			FT_Data_Struct->pit_limiter 	|= buffer[7];
+
+			return;
+		}
+
+#ifndef FT_CAN_FIXED
+		else if((ExtId & 0xFF) == 0xFF)
+		{
+			FT_Data_Struct->data_id  	  = buffer[0] << 8;
+			FT_Data_Struct->data_id 	 |= buffer[1];
+			FT_Data_Struct->data_content  = buffer[2] << 8;
+			FT_Data_Struct->data_content |= buffer[3];
+
+			FT_CAN_ProcessData(FT_Data_Struct);
+
+			if(DLC == 8)
+			{
+				FT_Data_Struct->data_id  	  = buffer[4] << 8;
+				FT_Data_Struct->data_id 	 |= buffer[5];
+				FT_Data_Struct->data_content  = buffer[6] << 8;
+				FT_Data_Struct->data_content |= buffer[7];
+
+				FT_CAN_ProcessData(FT_Data_Struct);
+			}
+
+			return;
+		}
+	}
+
+	else if((((ExtId / 0x800) & 0x07) == 0x02))// || ((((ExtId / 0x800) & 0x07) == 0x03)))
+	{
+		if(buffer[0] == 0xFF)
+		{
+			FT_Data_Struct->data_id  	  = buffer[1] << 8;
+			FT_Data_Struct->data_id 	 |= buffer[2];
+			FT_Data_Struct->data_content  = buffer[3] << 8;
+			FT_Data_Struct->data_content |= buffer[4];
+			FT_CAN_ProcessData(FT_Data_Struct);
+
+			return;
+		}
+
+		//Segmented Messages
+		else
+		{
+			//First Message
+			if(buffer[0] == 0)
+			{
+				FT_Data_Struct->data_length   = buffer[1] << 8;
+				FT_Data_Struct->data_length  |= buffer[2];
+
+				FT_Data_Struct->data_id  	  = buffer[3] << 8;
+				FT_Data_Struct->data_id 	 |= buffer[4];
+				FT_Data_Struct->data_content  = buffer[5] << 8;
+				FT_Data_Struct->data_content |= buffer[6];
+				FT_CAN_ProcessData(FT_Data_Struct);
+
+				FT_Data_Struct->data_id = buffer[7] << 8;
+				FT_Data_Struct->data_last_seg = 0;
+
+				return;
+			}
+			//Messages 1, 5, etc
+			else if((buffer[0] % 4) == 1)
+			{
+				if(buffer[0] == (FT_Data_Struct->data_last_seg + 1))
+				{
+					FT_Data_Struct->data_id 	 |= buffer[1];
+					FT_Data_Struct->data_content  = buffer[2] << 8;
+					FT_Data_Struct->data_content |= buffer[3];
+					FT_CAN_ProcessData(FT_Data_Struct);
+				}
+
+				if(DLC == 8)
+				{
+					FT_Data_Struct->data_id  	  = buffer[4] << 8;
+					FT_Data_Struct->data_id 	 |= buffer[5];
+					FT_Data_Struct->data_content  = buffer[6] << 8;
+					FT_Data_Struct->data_content |= buffer[7];
+					FT_CAN_ProcessData(FT_Data_Struct);
+				}
+
+				FT_Data_Struct->data_last_seg = buffer[0];
+
+				return;
+			}
+			//messages 2, 6, etc
+			else if((buffer[0] % 4) == 2)
+			{
+				FT_Data_Struct->data_id  	  = buffer[1] << 8;
+				FT_Data_Struct->data_id 	 |= buffer[2];
+				FT_Data_Struct->data_content  = buffer[3] << 8;
+				FT_Data_Struct->data_content |= buffer[4];
+				FT_CAN_ProcessData(FT_Data_Struct);
+
+				if(DLC == 8)
+				{
+					FT_Data_Struct->data_id  	 = buffer[5] << 8;
+					FT_Data_Struct->data_id 	|= buffer[6];
+					FT_Data_Struct->data_content = buffer[7] << 8;
+				}
+
+				FT_Data_Struct->data_last_seg = buffer[0];
+
+				return;
+			}
+			//Messages 3, 7, etc
+			else if((buffer[0] % 4) == 3)
+			{
+				if(buffer[0] == (FT_Data_Struct->data_last_seg + 1))
+				{
+					FT_Data_Struct->data_content |= buffer[1];
+					FT_CAN_ProcessData(FT_Data_Struct);
+				}
+
+				if(DLC >= 6)
+				{
+					FT_Data_Struct->data_id  	  = buffer[2] << 8;
+					FT_Data_Struct->data_id 	 |= buffer[3];
+					FT_Data_Struct->data_content  = buffer[4] << 8;
+					FT_Data_Struct->data_content |= buffer[5];
+					FT_CAN_ProcessData(FT_Data_Struct);
+				}
+
+				if(DLC == 8)
+				{
+					FT_Data_Struct->data_id  = buffer[6] << 8;
+					FT_Data_Struct->data_id |= buffer[7];
+				}
+
+				FT_Data_Struct->data_last_seg = buffer[0];
+
+				return;
+			}
+			//Messages 4, 8, etc
+			else if((buffer[0] % 4) == 0)
+			{
+				if(buffer[0] == (FT_Data_Struct->data_last_seg + 1))
+				{
+					FT_Data_Struct->data_content  = buffer[1] << 8;
+					FT_Data_Struct->data_content |= buffer[2];
+					FT_CAN_ProcessData(FT_Data_Struct);
+				}
+
+				if(DLC >= 7)
+				{
+					FT_Data_Struct->data_id  	  = buffer[3] << 8;
+					FT_Data_Struct->data_id 	 |= buffer[4];
+					FT_Data_Struct->data_content  = buffer[5] << 8;
+					FT_Data_Struct->data_content |= buffer[6];
+					FT_CAN_ProcessData(FT_Data_Struct);
+				}
+
+				if(DLC == 8)
+					FT_Data_Struct->data_id	= buffer[7] << 8;
+
+				FT_Data_Struct->data_last_seg = buffer[0];
+
+				return;
+			}
+		}
+#endif
+	}
+}
+
+#ifndef FT_CAN_FIXED
 
 static void FT_CAN_ProcessData(FT_Data* FT_Data_Struct)
 {
@@ -34,9 +263,8 @@ static void FT_CAN_ProcessData(FT_Data* FT_Data_Struct)
 	uint16_t data = FT_Data_Struct->data_content;
 
 	if((id & 0x1) == 0x1)
-	{
 		return;
-	}
+
 
 	switch(id >> 1)
 	{
@@ -514,235 +742,3 @@ __weak void FT_CAN_ProcessCustomData(uint16_t id, uint16_t data)
 }
 
 #endif
-
-void FT_CAN_ReceiveData(uint32_t RxID, uint32_t RxLength, uint8_t* pData, FT_Data* FT_Data_Struct)
-{
-	uint32_t extid = (RxID & 0x1FF80000) >> 13;
-
-	if(		   (extid != FT_Gear_Controller)
-			&& (extid != FT_Knock_Meter)
-			&& (extid != FT_Boost_Controller2)
-			&& (extid != FT_Injector_Driver)
-			&& (extid != FT_WBO2_Nano)
-			&& (extid != FT_WBO2_Slim)
-			&& (extid != FT_Alcohol_O2)
-			&& (extid != FTSpark)
-			&& (extid != FT_Switchpad)
-			&& (extid != FT500)
-			&& (extid != FT600))
-		return;
-
-	uint8_t buffer[RxLength];
-
-	for(uint8_t i = 0; i < RxLength; i++)
-		buffer[i] = pData[i];
-
-	if((((RxID / 0x800) & 0x7) == 0x00) || (((RxID / 0x800) & 0x7) == 0x01))
-	{
-		if((RxID & 0xFFF) == 0x600)
-		{
-			FT_Data_Struct->tps  = buffer[0] << 8;
-			FT_Data_Struct->tps |= buffer[1];
-			FT_Data_Struct->map  = buffer[2] << 8;
-			FT_Data_Struct->map |= buffer[3];
-			FT_Data_Struct->iat  = buffer[4] << 8;
-			FT_Data_Struct->iat |= buffer[5];
-			FT_Data_Struct->ect  = buffer[6] << 8;
-			FT_Data_Struct->ect |= buffer[7];
-
-			return;
-		}
-		else if((RxID & 0xFFF) == 0x601)
-		{
-			FT_Data_Struct->oil_pressure  	  = buffer[0] << 8;
-			FT_Data_Struct->oil_pressure 	 |= buffer[1];
-			FT_Data_Struct->fuel_pressure 	  = buffer[2] << 8;
-			FT_Data_Struct->fuel_pressure 	 |= buffer[3];
-			FT_Data_Struct->coolant_pressure  = buffer[4] << 8;
-			FT_Data_Struct->coolant_pressure |= buffer[5];
-			FT_Data_Struct->gear  			  = buffer[6] << 8;
-			FT_Data_Struct->gear 			 |= buffer[7];
-
-			return;
-		}
-		else if((RxID & 0xFFF) == 0x602)
-		{
-			FT_Data_Struct->lambda  		 = buffer[0] << 8;
-			FT_Data_Struct->lambda 			|= buffer[1];
-			FT_Data_Struct->rpm  			 = buffer[2] << 8;
-			FT_Data_Struct->rpm 			|= buffer[3];
-			FT_Data_Struct->oil_temperature  = buffer[4] << 8;
-			FT_Data_Struct->oil_temperature |= buffer[5];
-			FT_Data_Struct->pit_limiter  	 = buffer[6] << 8;
-			FT_Data_Struct->pit_limiter 	|= buffer[7];
-
-			return;
-		}
-
-#ifndef FT_CAN_SIMPLE
-		else if((RxID & 0xFF) == 0xFF)
-		{
-			FT_Data_Struct->data_id  	  = buffer[0] << 8;
-			FT_Data_Struct->data_id 	 |= buffer[1];
-			FT_Data_Struct->data_content  = buffer[2] << 8;
-			FT_Data_Struct->data_content |= buffer[3];
-
-			FT_CAN_ProcessData(FT_Data_Struct);
-
-			FT_Data_Struct->data_id  	  = buffer[4] << 8;
-			FT_Data_Struct->data_id 	 |= buffer[5];
-			FT_Data_Struct->data_content  = buffer[6] << 8;
-			FT_Data_Struct->data_content |= buffer[7];
-
-			FT_CAN_ProcessData(FT_Data_Struct);
-
-			return;
-		}
-	}
-
-	else if(buffer[0] == 0xFF)
-	{
-		FT_Data_Struct->data_id  	  = buffer[1] << 8;
-		FT_Data_Struct->data_id 	 |= buffer[2];
-		FT_Data_Struct->data_content  = buffer[3] << 8;
-		FT_Data_Struct->data_content |= buffer[4];
-
-		FT_CAN_ProcessData(FT_Data_Struct);
-
-		return;
-	}
-
-	//Segmented Messages
-	else
-	{
-		//First Message
-		if(buffer[0] == 0)
-		{
-			FT_Data_Struct->data_length   = buffer[1] << 8;
-			FT_Data_Struct->data_length  |= buffer[2];
-
-			FT_Data_Struct->data_id  	  = buffer[3] << 8;
-			FT_Data_Struct->data_id 	 |= buffer[4];
-			FT_Data_Struct->data_content  = buffer[5] << 8;
-			FT_Data_Struct->data_content |= buffer[6];
-
-			FT_CAN_ProcessData(FT_Data_Struct);
-
-			if(RxLength == 8)
-				FT_Data_Struct->data_id   = buffer[7] << 8;
-
-			FT_Data_Struct->data_last_seg = 0;
-
-			return;
-		}
-		//Messages 1, 5, etc
-		else if((buffer[0]-1)%4 == 0)
-		{
-			if(buffer[0] == FT_Data_Struct->data_last_seg + 1)
-			{
-				FT_Data_Struct->data_id 	 |= buffer[1];
-				FT_Data_Struct->data_content  = buffer[2] << 8;
-				FT_Data_Struct->data_content |= buffer[3];
-
-				FT_CAN_ProcessData(FT_Data_Struct);
-			}
-
-			if(RxLength == 8)
-			{
-				FT_Data_Struct->data_id  	  = buffer[4] << 8;
-				FT_Data_Struct->data_id 	 |= buffer[5];
-				FT_Data_Struct->data_content  = buffer[6] << 8;
-				FT_Data_Struct->data_content |= buffer[7];
-
-				FT_CAN_ProcessData(FT_Data_Struct);
-			}
-
-			FT_Data_Struct->data_last_seg 	  = buffer[0];
-
-			return;
-		}
-		//messages 2, 6, etc
-		else if((buffer[0]-2)%4 == 0)
-		{
-			if(RxLength >= 5)
-			{
-				FT_Data_Struct->data_id  	  = buffer[1] << 8;
-				FT_Data_Struct->data_id 	 |= buffer[2];
-				FT_Data_Struct->data_content  = buffer[3] << 8;
-				FT_Data_Struct->data_content |= buffer[4];
-
-				FT_CAN_ProcessData(FT_Data_Struct);
-			}
-
-			if(RxLength == 8)
-			{
-				FT_Data_Struct->data_id  	 = buffer[5] << 8;
-				FT_Data_Struct->data_id 	|= buffer[6];
-				FT_Data_Struct->data_content = buffer[7] << 8;
-			}
-
-			FT_Data_Struct->data_last_seg 	 = buffer[0];
-
-			return;
-		}
-		//Messages 3, 7, etc
-		else if((buffer[0]-3)%4 == 0)
-		{
-			if(buffer[0] == FT_Data_Struct->data_last_seg + 1)
-			{
-				FT_Data_Struct->data_content |= buffer[1];
-
-				FT_CAN_ProcessData(FT_Data_Struct);
-			}
-
-			if(RxLength >= 6)
-			{
-				FT_Data_Struct->data_id  	  = buffer[2] << 8;
-				FT_Data_Struct->data_id 	 |= buffer[3];
-				FT_Data_Struct->data_content  = buffer[4] << 8;
-				FT_Data_Struct->data_content |= buffer[5];
-
-				FT_CAN_ProcessData(FT_Data_Struct);
-			}
-
-			if(RxLength == 8)
-			{
-				FT_Data_Struct->data_id 	  = buffer[6] << 8;
-				FT_Data_Struct->data_id 	 |= buffer[7];
-			}
-
-			FT_Data_Struct->data_last_seg 	  = buffer[0];
-
-			return;
-		}
-		//Messages 4, 8, etc
-		else if(buffer[0]%4 == 0)
-		{
-			if(buffer[0] == FT_Data_Struct->data_last_seg + 1)
-			{
-				FT_Data_Struct->data_content  = buffer[1] << 8;
-				FT_Data_Struct->data_content |= buffer[2];
-
-				FT_CAN_ProcessData(FT_Data_Struct);
-			}
-
-			if(RxLength >= 7)
-			{
-				FT_Data_Struct->data_id  	  = buffer[3] << 8;
-				FT_Data_Struct->data_id 	 |= buffer[4];
-				FT_Data_Struct->data_content  = buffer[5] << 8;
-				FT_Data_Struct->data_content |= buffer[6];
-
-				FT_CAN_ProcessData(FT_Data_Struct);
-			}
-
-			if(RxLength == 8)
-			FT_Data_Struct->data_id 	  	  = buffer[7] << 8;
-
-			FT_Data_Struct->data_last_seg 	  = buffer[0];
-
-			return;
-		}
-#endif
-	}
-}

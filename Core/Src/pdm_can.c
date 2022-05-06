@@ -219,26 +219,34 @@ HAL_StatusTypeDef PDM_CAN_FilterConfig(CAN_HandleTypeDef* hcan, uint32_t bank_po
 	return HAL_CAN_ConfigFilter(hcan, &sFilterConfig);
 }
 
-void PDM_CAN_Process_Data(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, PDM_Data* data_struct)
+void PDM_CAN_Process_Data(CAN_RxHeaderTypeDef* rx_header, uint8_t* data_buffer, PDM_Data* data_struct)
 {
-	uint16_t id = 0, data = 0;
+	uint8_t length = 0;
+	uint8_t buffer[8];
+	uint16_t id = 0;
+	uint16_t data = 0;
 
-	if((data_id & 0x1FFFF000) != 0x1E35C000)
+	if((rx_header->DLC != CAN_ID_EXT) && ((rx_header->ExtId & 0x1FFFF000) != 0x1E35C000))
 		return;
 
-	id  = data_buffer[0] << 8;
-	id |= data_buffer[1] & 0xff;
-	data  = data_buffer[2] << 8;
-	data |= data_buffer[3] & 0xff;
+	length = rx_header->DLC;
+
+	for(uint8_t i = 0; i < length; i++)
+		buffer[i] = data_buffer[i];
+
+	id  = buffer[0] << 8;
+	id |= buffer[1] & 0xff;
+	data  = buffer[2] << 8;
+	data |= buffer[3] & 0xff;
 
 	Process_Data(id, data, data_struct);
 
-	if(data_length == 8)
+	if(length == 8)
 	{
-		id  = data_buffer[4] << 8;
-		id |= data_buffer[5] & 0xff;
-		data  = data_buffer[6] << 8;
-		data |= data_buffer[7] & 0xff;
+		id  = buffer[4] << 8;
+		id |= buffer[5] & 0xff;
+		data  = buffer[6] << 8;
+		data |= buffer[7] & 0xff;
 
 		Process_Data(id, data, data_struct);
 	}

@@ -10,9 +10,9 @@
 
 #include "main.h"
 
-//#define FT_CAN_SIMPLE
+//#define FT_CAN_FIXED
 
-#ifndef FT_CAN_SIMPLE
+#ifndef FT_CAN_FIXED
 
 //#define FT_CAN_LAMBDA
 //#define FT_CAN_EGT
@@ -211,7 +211,7 @@ typedef struct{
 	int16_t rpm;					//*1		(RPM)
 	int16_t tps;					//*0.1		(%)
 
-#ifndef FT_CAN_SIMPLE
+#ifndef FT_CAN_FIXED
 	uint16_t data_content;
 	uint16_t data_id;
 	uint16_t data_length;
@@ -221,9 +221,9 @@ typedef struct{
 
 HAL_StatusTypeDef FT_CAN_FilterConfig(CAN_HandleTypeDef *hcan, uint16_t FT_Product, uint8_t filter_bank_position, uint32_t Filter_FIFO);
 
-void FT_CAN_ReceiveData(uint32_t RxID, uint32_t RxLength, uint8_t* pData, FT_Data* FT_Data_Struct);
+void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data* FT_Data_Struct);
 
-#ifndef FT_CAN_SIMPLE
+#ifndef FT_CAN_FIXED
 void FT_CAN_ProcessCustomData(uint16_t id, uint16_t data);
 #endif
 

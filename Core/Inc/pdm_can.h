@@ -20,6 +20,6 @@ typedef struct{
 
 HAL_StatusTypeDef PDM_CAN_FilterConfig(CAN_HandleTypeDef* hcan, uint32_t bank_position, uint32_t fifo_assignment);
 
-void PDM_CAN_Process_Data(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, PDM_Data* data_struct);
+void PDM_CAN_Process_Data(CAN_RxHeaderTypeDef* rx_header, uint8_t* data_buffer, PDM_Data* data_struct);
 
 #endif /* INC_PDM_CAN_H_ */

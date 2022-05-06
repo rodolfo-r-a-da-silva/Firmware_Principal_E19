@@ -16,14 +16,17 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		if((rxHeader.IDE == CAN_ID_STD) && ((rxHeader.StdId & CAN_DAQ_MASK) == CAN_DAQ_FILTER) && (flagDatalogger == DL_SAVE))
 			Principal_Datalogger_Save_Buffer(rxHeader.StdId, rxHeader.DLC, rxData, &dirStruct, &fileStruct);
 
-		else if(((rxHeader.ExtId & 0x1FFFF000) == 0x1E35C000) && (rxHeader.IDE == CAN_ID_EXT))
-			PDM_CAN_Process_Data(rxHeader.ExtId, rxHeader.DLC, rxData, &pdmReadings);
+		else if(rxHeader.IDE == CAN_ID_EXT)
+		{
+			if(rxHeader.ExtId == CONFIG_ID)
+				Principal_Receive_Config(&hi2c1, rxData, rxHeader.DLC);
 
-		else if((rxHeader.ExtId == CONFIG_ID) && (rxHeader.IDE == CAN_ID_EXT))
-			Principal_Receive_Config(&hi2c1, rxData, rxHeader.DLC);
-
-		else
-			FT_CAN_ReceiveData(rxHeader.ExtId, rxHeader.DLC, rxData, &ecuData);
+			else
+			{
+				PDM_CAN_Process_Data(&rxHeader, rxData, &pdmReadings);
+				FT_CAN_ReceiveData(&rxHeader, rxData, &ecuData);
+			}
+		}
 	}
 
 	else
@@ -32,21 +35,35 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+	GPIO_PinState pinLevel;
+
 	if(GPIO_Pin == EXTI0_Pin)
 	{
-		if((inputConfig & 0x01) == 0)
+		pinLevel = HAL_GPIO_ReadPin(EXTI0_GPIO_Port, EXTI0_Pin);
+
+		if(((inputConfig & 0x01) == INPUT_BEACON_PIN_0)
+				&& ((((inputConfig & 0x04) == INPUT_BEACON_FALLING_EDGE) && (pinLevel == GPIO_PIN_RESET))
+				|| (((inputConfig & 0x04) == INPUT_BEACON_RISING_EDGE) && (pinLevel == GPIO_PIN_SET))))
 			Principal_Beacon_Detect();
 
-		if((inputConfig & 0x02) == 0)
+		if(((inputConfig & 0x02) == INPUT_DATALOGGER_PIN_0)
+				&& ((((inputConfig & 0x08) == INPUT_DATALOGGER_FALLING_EDGE) && (pinLevel == GPIO_PIN_RESET))
+				|| (((inputConfig & 0x08) == INPUT_DATALOGGER_RISING_EDGE) && (pinLevel == GPIO_PIN_SET))))
 			Principal_Datalogger_Button(&dirStruct, &fileStruct);
 	}
 
 	if(GPIO_Pin == EXTI1_Pin)
 	{
-		if((inputConfig & 0x01) == 1)
+		pinLevel = HAL_GPIO_ReadPin(EXTI1_GPIO_Port, EXTI1_Pin);
+
+		if(((inputConfig & 0x01) == INPUT_BEACON_PIN_1)
+				&& ((((inputConfig & 0x04) == INPUT_BEACON_FALLING_EDGE) && (pinLevel == GPIO_PIN_RESET))
+				|| (((inputConfig & 0x04) == INPUT_BEACON_RISING_EDGE) && (pinLevel == GPIO_PIN_SET))))
 			Principal_Beacon_Detect();
 
-		if((inputConfig & 0x02) == 2)
+		if(((inputConfig & 0x02) == INPUT_DATALOGGER_PIN_1)
+				&& ((((inputConfig & 0x08) == INPUT_DATALOGGER_FALLING_EDGE) && (pinLevel == GPIO_PIN_RESET))
+				|| (((inputConfig & 0x08) == INPUT_DATALOGGER_RISING_EDGE) && (pinLevel == GPIO_PIN_SET))))
 			Principal_Datalogger_Button(&dirStruct, &fileStruct);
 	}
 }
@@ -55,8 +72,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if(htim->Instance == TIM7)
 	{
-		accDatalogger[0]++;
-		if(accDatalogger[1] > 0) accDatalogger[1]--;
+		accDatalogger[DL_ACC_TIMING]++;
+		accDatalogger[DL_ACC_TIMEOUT]++;
+		if(accDatalogger[DL_ACC_COOLDOWN] > 0) accDatalogger[DL_ACC_COOLDOWN]--;
 
 		accCAN[ANALOG_1_4]++;
 		accCAN[ANALOG_5_8]++;
@@ -73,6 +91,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		accMsg[BEACON_MSG]++;
 		accMsg[ECU_SAVE]++;
 		accMsg[PDM_SAVE]++;
+		accMsg[VERIFY_LEDS]++;
 
 		accLap++;
 	}

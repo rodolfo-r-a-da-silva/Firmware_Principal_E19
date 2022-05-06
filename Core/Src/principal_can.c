@@ -7,7 +7,7 @@
 
 #include "principal.h"
 
-void Principal_Verify()
+void Principal_Verify_LEDs()
 {
 	verifyADC = 0;
 
@@ -15,18 +15,20 @@ void Principal_Verify()
 		if(adcBuffer[i] > ADC_THRESHOLD)
 			verifyADC |= (1 << i);
 
+	HAL_GPIO_TogglePin(LED_OK);
+
 	if(flagDatalogger == DL_SAVE)
 		HAL_GPIO_WritePin(LED_DATALOGGER, GPIO_PIN_SET);
 	else
 		HAL_GPIO_WritePin(LED_DATALOGGER, GPIO_PIN_RESET);
 
 	if((verifyCAN & 1) == 1)
-		HAL_GPIO_TogglePin(LED_CAN_TX);
+		HAL_GPIO_WritePin(LED_CAN_TX, GPIO_PIN_SET);
 	else
 		HAL_GPIO_WritePin(LED_CAN_TX, GPIO_PIN_RESET);
 
 	if((verifyCAN & 2) == 2)
-		HAL_GPIO_TogglePin(LED_CAN_RX);
+		HAL_GPIO_WritePin(LED_CAN_RX, GPIO_PIN_SET);
 	else
 		HAL_GPIO_WritePin(LED_CAN_RX, GPIO_PIN_RESET);
 }
@@ -42,7 +44,7 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
-	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + ANALOG_1_4);
+	txHeader.StdId = FIRST_ID + ANALOG_1_4;
 	txHeader.DLC = 8;
 
 	txData[0] = adcBuffer[0] >> 8;
@@ -82,7 +84,7 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
-	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + ANALOG_5_8);
+	txHeader.StdId = FIRST_ID + ANALOG_5_8;
 	txHeader.DLC = 8;
 
 	txData[0] = adcBuffer[4] >> 8;
@@ -122,7 +124,7 @@ static void Tx_Analog_9_12(CAN_HandleTypeDef* hcan)
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
-	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + ANALOG_9_12);
+	txHeader.StdId = FIRST_ID + ANALOG_9_12;
 	txHeader.DLC = 8;
 
 	if((verifyADC & 0x0f00) == 0)
@@ -159,8 +161,8 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
-	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + RTC_MSG);
-	txHeader.DLC = 8;
+	txHeader.StdId = FIRST_ID + RTC_MSG;
+	txHeader.DLC = 6;
 
 	HAL_RTC_GetTime(&hrtc, &rtcTime, RTC_FORMAT_BIN);
 	HAL_RTC_GetDate(&hrtc, &rtcDate, RTC_FORMAT_BIN);
@@ -171,8 +173,7 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 	txData[3] = rtcTime.Hours;
 	txData[4] = rtcTime.Minutes;
 	txData[5] = rtcTime.Seconds;
-	txData[6] = adcBuffer[12] >> 8;
-	txData[7] = adcBuffer[12] & 0xff;
+
 
 	if(flagDatalogger == DL_SAVE)
 		Principal_Datalogger_Save_Buffer(txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
@@ -196,16 +197,19 @@ static void Tx_Verify(CAN_HandleTypeDef* hcan)
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
-	txHeader.StdId = CAN_DAQ_FILTER | (FIRST_ID + VERIFY_MSG);
+	txHeader.StdId = FIRST_ID + VERIFY_MSG;
 	txHeader.DLC = 8;
-
-	Principal_Verify();
 
 	txData[0] = verifyADC & 0xff;
 	txData[1] = (verifyADC >> 8) & 0x0f;
 
 	if(flagDatalogger == DL_SAVE)
+	{
 		txData[1] |= (1 << 4);
+		HAL_GPIO_WritePin(OUT0_GPIO_Port, OUT0_Pin, GPIO_PIN_RESET);
+	}
+	else
+		HAL_GPIO_WritePin(OUT0_GPIO_Port, OUT0_Pin, GPIO_PIN_SET);
 
 	if(flagRTC == RTC_OK)
 		txData[1] |= (1 << 5);
@@ -241,7 +245,7 @@ static void Tx_Beacon(CAN_HandleTypeDef* hcan)
 	txHeader.IDE = CAN_ID_STD;
 	txHeader.RTR = CAN_RTR_DATA;
 	txHeader.TransmitGlobalTime = DISABLE;
-	txHeader.StdId = CAN_DAQ_FILTER | BEACON_ID;
+	txHeader.StdId = BEACON_ID;
 	txHeader.DLC = 5;
 
 	buffer[0] = accLap / 60000;
@@ -262,6 +266,7 @@ static void Tx_Beacon(CAN_HandleTypeDef* hcan)
 	if((accCAN[BEACON_MSG] >= perCAN[BEACON_MSG]) && (perCAN[BEACON_MSG] != MSG_DISABLED))
 	{
 		accCAN[BEACON_MSG] -= perCAN[BEACON_MSG];
+
 		if(HAL_CAN_AddTxMessage(hcan, &txHeader, txData, &txMailbox) == HAL_OK)
 			verifyCAN |= 1;
 		else
@@ -490,11 +495,12 @@ void Principal_CAN_Start(CAN_HandleTypeDef* hcan)
 	HAL_CAN_ConfigFilter(hcan, &sFilterConfig);
 
 	FT_CAN_FilterConfig(hcan, FT600, 2, CAN_RX_FIFO0);
-	PDM_CAN_FilterConfig(hcan, 3, CAN_RX_FIFO0);
-
-	HAL_CAN_Start(hcan);
+	FT_CAN_FilterConfig(hcan, FT_WBO2_Nano, 3, CAN_RX_FIFO0);
+	PDM_CAN_FilterConfig(hcan, 4, CAN_RX_FIFO0);
 
 	HAL_CAN_ActivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING);
+
+	HAL_CAN_Start(hcan);
 }
 
 void Principal_Transmit_Msg(CAN_HandleTypeDef* hcan, uint8_t msg_number)
