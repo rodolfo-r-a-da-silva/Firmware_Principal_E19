@@ -16,8 +16,8 @@
 
 /*BEGIN DEFINES*/
 //CAN
-#define CAN_CFG_FILTER	0x0000
-#define CAN_CFG_MASK	0x0000
+#define CAN_CFG_FILTER	0x1E300000
+#define CAN_CFG_MASK	0x1FF80000
 #define CAN_DAQ_FILTER	0x500
 #define CAN_DAQ_MASK	0x700
 #define CONFIG_ID		0
@@ -27,8 +27,11 @@
 #define PDM_FIRST_ID	0x0A
 
 //CONFIGURATION
-#define EEPROM_BUFFER_SIZE	13
-#define EEPROM_WRITE_CYCLE	10
+#define EEPROM_ADDRESS_READ		0xA1
+#define EEPROM_ADDRESS_WRITE	0xA0
+#define EEPROM_BUFFER_SIZE		19
+#define EEPROM_READ_TIMEOUT		5
+#define EEPROM_WRITE_TIMEOUT	10
 
 //DATA
 #define ADC_THRESHOLD		30
@@ -37,24 +40,24 @@
 #define NBR_OF_LOCAL_MSGS	3
 
 //DATALOGGER
-#define DATALOGGER_BUTTON_COOLDOWN	2000
-#define DATALOGGER_BUFFER_SIZE		DATALOFFER_BUFFER_64KB
+#define DATALOGGER_COOLDOWN			2000
+#define DATALOGGER_BUFFER_SIZE		DATALOGGER_BUFFER_16KB
 #define DATALOGGER_MSG_MAX_SIZE		13
 #define DATALOGGER_SAVE_THR			(DATALOGGER_BUFFER_SIZE - DATALOGGER_MSG_MAX_SIZE)
 #define DATALOGGER_SAVE_TIME_THR	1000
 #define DIRECTORY_STRING_SIZE		9
-#define LOG_STRING_SIZE				50
+#define LOG_STRING_SIZE				30
 #define RTC_STORE_DATA				0xE35C
 
 //DATALOGGER BUFFER
-#define DATALOFFER_BUFFER_05KB	512
-#define DATALOFFER_BUFFER_1KB	1024
-#define DATALOFFER_BUFFER_2KB	2048
-#define DATALOFFER_BUFFER_4KB	4096
-#define DATALOFFER_BUFFER_8KB	8192
-#define DATALOFFER_BUFFER_16KB	16384
-#define DATALOFFER_BUFFER_32KB	32768
-#define DATALOFFER_BUFFER_64KB	65536
+#define DATALOGGER_BUFFER_05KB	512
+#define DATALOGGER_BUFFER_1KB	1024
+#define DATALOGGER_BUFFER_2KB	2048
+#define DATALOGGER_BUFFER_4KB	4096
+#define DATALOGGER_BUFFER_8KB	8192
+#define DATALOGGER_BUFFER_16KB	16384
+#define DATALOGGER_BUFFER_32KB	32768
+#define DATALOGGER_BUFFER_64KB	65536
 
 //FREQUENCIES
 #define MSG_DISABLED	0
@@ -300,7 +303,7 @@ FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* 
 
 FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct);
 
-void Principal_Datalogger_Save_Buffer(uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, DIR* dir_struct, FIL* file_struct);
+void Principal_Datalogger_Save_Buffer(CAN_HandleTypeDef* hcan, uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, DIR* dir_struct, FIL* file_struct);
 
 void Principal_Datalogger_Button(DIR* dir_struct, FIL* file_struct);
 

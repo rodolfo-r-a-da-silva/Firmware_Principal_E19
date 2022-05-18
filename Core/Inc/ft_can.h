@@ -34,7 +34,7 @@ typedef enum{
 	FTSpark					= 0x0243,
 	FT_Switchpad			= 0x0244,
 	FT500					= 0x0280,
-	FT600					= 0x0281
+	FT_Power_ECU			= 0x0281
 }Product_IDs;
 
 typedef struct{
@@ -174,7 +174,6 @@ typedef struct{
 
 	int16_t lambda_average;			//*0.001	(Lambda)
 	int16_t fuel_cut;				//*1		(%)
-	int16_t total_fuel_flow;		//*0.01		(L/min)
 
 	int16_t driveshaft_rpm;			//*1		(RPM)
 	int16_t gear_cut;				//*1		(%)
@@ -188,28 +187,33 @@ typedef struct{
 	int16_t drag_speed;				//*1		(Km/h)
 	int16_t traction_speed;			//*1 		(Km/h)
 
-	int16_t wheel_speed_fl;			//*1		(Km/h)
-	int16_t wheel_speed_fr;			//*1		(Km/h)
-	int16_t wheel_speed_rl;			//*1		(Km/h)
-	int16_t wheel_speed_rr;			//*1		(Km/h)
-
 	int16_t day_night_state;		//0 == day, 1 == night
 	int16_t generic_outputs_state;
 	int16_t self_dial;				//*0.001	(s)
 #endif
 
+	int16_t accel_lat;				//*0.01		(G)
+	int16_t accel_long;				//*0.01		(G)
 	int16_t ect;					//*0.1		(°C)
 	int16_t coolant_pressure;		//*0.001	(Bar)
 	int16_t iat;					//*0.1		(°C)
 	int16_t fuel_pressure;			//*0.001	(Bar)
-	int16_t gear;
+	int16_t fuel_flow_total;		//*0.01		(L/min)
+	int16_t gear;					//*1		(gear)
 	int16_t lambda;					//*0.001	(Lambda)
+	int16_t lambda_correction;		//*0.1		(%)
 	int16_t map;					//*0.001	(Bar)
 	int16_t oil_pressure;			//*0.001	(Bar)
 	int16_t oil_temperature;		//*0.1		(°C)
 	int16_t pit_limiter;			//0 == off, 1 == on
 	int16_t rpm;					//*1		(RPM)
 	int16_t tps;					//*0.1		(%)
+	int16_t wheel_speed_fl;			//*1		(Km/h)
+	int16_t wheel_speed_fr;			//*1		(Km/h)
+	int16_t wheel_speed_rl;			//*1		(Km/h)
+	int16_t wheel_speed_rr;			//*1		(Km/h)
+	int16_t yaw_rate_pitch;			//*0.01		(°/s)
+	int16_t yaw_rate_roll;			//*0.01		(°/s)
 
 #ifndef FT_CAN_FIXED
 	uint16_t data_content;

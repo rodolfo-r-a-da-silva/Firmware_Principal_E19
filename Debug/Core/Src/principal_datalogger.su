@@ -1,7 +1,7 @@
 ../Core/Src/principal_datalogger.c:12:9:Principal_Datalogger_Init	24	static
 ../Core/Src/principal_datalogger.c:37:9:Principal_Datalogger_Start	72	static
-../Core/Src/principal_datalogger.c:103:9:Principal_Datalogger_Finish	24	static
+../Core/Src/principal_datalogger.c:105:9:Principal_Datalogger_Finish	24	static
 ../Core/Src/principal_datalogger.c:127:6:Principal_Datalogger_Save_Buffer	72	dynamic
-../Core/Src/principal_datalogger.c:173:6:Principal_Datalogger_Button	16	static
-../Core/Src/principal_datalogger.c:185:6:Principal_Card_Detection	32	static
-../Core/Src/principal_datalogger.c:196:6:Principal_Beacon_Detect	8	static
+../Core/Src/principal_datalogger.c:185:6:Principal_Datalogger_Button	16	static
+../Core/Src/principal_datalogger.c:197:6:Principal_Card_Detection	32	static
+../Core/Src/principal_datalogger.c:208:6:Principal_Beacon_Detect	8	static

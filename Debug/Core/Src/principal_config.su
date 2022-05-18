@@ -2,4 +2,4 @@
 ../Core/Src/principal_config.c:44:19:Principal_Receive_Config	32	static
 ../Core/Src/principal_config.c:123:13:Principal_Hard_Code_Config	4	static
 ../Core/Src/principal_config.c:149:26:Load_EEPROM	48	static
-../Core/Src/principal_config.c:207:26:Save_EEPROM	48	static
+../Core/Src/principal_config.c:196:26:Save_EEPROM	56	static

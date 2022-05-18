@@ -118,7 +118,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_IWDG_Init();
+//  MX_IWDG_Init();
   MX_SDIO_SD_Init();
   MX_ADC1_Init();
   MX_RTC_Init();
@@ -130,22 +130,19 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
   Principal_Init(&hcan1, &hi2c1, &htim7);
+//  HAL_IWDG_Refresh(&hiwdg);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  //Checks if data is being saved and starts saving if conditions are met
-	  if((flagDatalogger == DL_NO_SAVE) || (flagDatalogger == DL_BUT_PRESS))
-		  Principal_Datalogger_Start(dirString, logString, &dirStruct, &fileStruct);
-
 	  //Checks card detect pin level change for datalogger initialization or deinitialization
 	  Principal_Card_Detection(&fatfsStruct, &dirStruct, &fileStruct);
 
-	  //Checks USB cable connection, if connected will disable logging
-//	  if((HAL_GPIO_ReadPin(VBUS_PIN) == GPIO_PIN_SET) && (flagDatalogger == DL_SAVE))
-//		  Principal_Datalogger_Finish(&dirStruct, &fileStruct);
+	  //Checks if data is being saved and starts saving if conditions are met
+	  if((flagDatalogger == DL_NO_SAVE) || (flagDatalogger == DL_BUT_PRESS))
+		  Principal_Datalogger_Start(dirString, logString, &dirStruct, &fileStruct);
 
 	  //Analog inputs 1-4 CAN message
 	  if((accMsg[ANALOG_1_4] >= perMsg[ANALOG_1_4]) && (perMsg[ANALOG_1_4] != MSG_DISABLED))
@@ -193,7 +190,7 @@ int main(void)
 	  if((accMsg[PDM_SAVE] >= perMsg[PDM_SAVE]) && (perMsg[PDM_SAVE] != MSG_DISABLED))
 	  {
 		  accMsg[PDM_SAVE] -= perMsg[PDM_SAVE];
-		  Principal_Transmit_Msg(&hcan1, PDM_SAVE);
+//		  Principal_Transmit_Msg(&hcan1, PDM_SAVE);
 	  }
 
 	  if(accMsg[VERIFY_LEDS] >= MSG_FREQ_5HZ)
@@ -202,8 +199,8 @@ int main(void)
 		  Principal_Verify_LEDs();
 	  }
 
-	  if((verifyCAN != 0) && (flagDatalogger != DL_ERROR))
-		  HAL_IWDG_Refresh(&hiwdg);
+//	  if((verifyCAN != 0) && (flagDatalogger != DL_ERROR))
+//		  HAL_IWDG_Refresh(&hiwdg);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -503,7 +500,7 @@ static void MX_CAN1_Init(void)
   hcan1.Instance = CAN1;
   hcan1.Init.Prescaler = 5;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
-  hcan1.Init.SyncJumpWidth = CAN_SJW_4TQ;
+  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
   hcan1.Init.TimeSeg1 = CAN_BS1_7TQ;
   hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
   hcan1.Init.TimeTriggeredMode = DISABLE;

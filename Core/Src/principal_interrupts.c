@@ -14,11 +14,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		verifyCAN |= 2;
 
 		if((rxHeader.IDE == CAN_ID_STD) && ((rxHeader.StdId & CAN_DAQ_MASK) == CAN_DAQ_FILTER) && (flagDatalogger == DL_SAVE))
-			Principal_Datalogger_Save_Buffer(rxHeader.StdId, rxHeader.DLC, rxData, &dirStruct, &fileStruct);
+			Principal_Datalogger_Save_Buffer(hcan, rxHeader.StdId, rxHeader.DLC, rxData, &dirStruct, &fileStruct);
 
 		else if(rxHeader.IDE == CAN_ID_EXT)
 		{
-			if(rxHeader.ExtId == CONFIG_ID)
+			if((rxHeader.ExtId & CAN_CFG_MASK) == CAN_CFG_FILTER)
 				Principal_Receive_Config(&hi2c1, rxData, rxHeader.DLC);
 
 			else

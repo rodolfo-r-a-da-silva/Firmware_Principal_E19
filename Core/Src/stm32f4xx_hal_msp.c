@@ -292,7 +292,7 @@ void HAL_CAN_MspInit(CAN_HandleTypeDef* hcan)
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* CAN1 interrupt Init */
-    HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 2, 0);
+    HAL_NVIC_SetPriority(CAN1_RX0_IRQn, 1, 0);
     HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
   /* USER CODE BEGIN CAN1_MspInit 1 */
 
@@ -506,7 +506,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef* hsd)
     hdma_sdio_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     hdma_sdio_rx.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
     hdma_sdio_rx.Init.Mode = DMA_PFCTRL;
-    hdma_sdio_rx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_sdio_rx.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     hdma_sdio_rx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
     hdma_sdio_rx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
     hdma_sdio_rx.Init.MemBurst = DMA_MBURST_INC4;
@@ -527,7 +527,7 @@ void HAL_SD_MspInit(SD_HandleTypeDef* hsd)
     hdma_sdio_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     hdma_sdio_tx.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
     hdma_sdio_tx.Init.Mode = DMA_PFCTRL;
-    hdma_sdio_tx.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_sdio_tx.Init.Priority = DMA_PRIORITY_VERY_HIGH;
     hdma_sdio_tx.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
     hdma_sdio_tx.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
     hdma_sdio_tx.Init.MemBurst = DMA_MBURST_INC4;

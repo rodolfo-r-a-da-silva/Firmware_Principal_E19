@@ -1,4 +1,4 @@
 ../Core/Src/ft_can.c:12:19:FT_CAN_FilterConfig	72	static
 ../Core/Src/ft_can.c:31:6:FT_CAN_ReceiveData	40	static
-../Core/Src/ft_can.c:260:13:FT_CAN_ProcessData	24	static
-../Core/Src/ft_can.c:738:13:FT_CAN_ProcessCustomData	16	static
+../Core/Src/ft_can.c:300:13:FT_CAN_ProcessData	24	static
+../Core/Src/ft_can.c:780:13:FT_CAN_ProcessCustomData	16	static

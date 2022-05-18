@@ -44,7 +44,7 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
 		&& (ExtId != FTSpark)
 		&& (ExtId != FT_Switchpad)
 		&& (ExtId != FT500)
-		&& (ExtId != FT600)
+		&& (ExtId != FT_Power_ECU)
 		&& (pRxHeader->IDE != CAN_ID_EXT))
 		return;
 
@@ -68,6 +68,7 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
 
 			return;
 		}
+
 		else if((ExtId & 0xFFF) == 0x601)
 		{
 			FT_Data_Struct->oil_pressure  	  = buffer[0] << 8;
@@ -81,6 +82,7 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
 
 			return;
 		}
+
 		else if((ExtId & 0xFFF) == 0x602)
 		{
 			FT_Data_Struct->lambda  		 = buffer[0] << 8;
@@ -91,6 +93,44 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
 			FT_Data_Struct->oil_temperature |= buffer[5];
 			FT_Data_Struct->pit_limiter  	 = buffer[6] << 8;
 			FT_Data_Struct->pit_limiter 	|= buffer[7];
+
+			return;
+		}
+
+		else if((ExtId & 0xFFF) == 0x603)
+		{
+			FT_Data_Struct->wheel_speed_fr	 = buffer[0] << 8;
+			FT_Data_Struct->wheel_speed_fr	|= buffer[1];
+			FT_Data_Struct->wheel_speed_fl	 = buffer[2] << 8;
+			FT_Data_Struct->wheel_speed_fl	|= buffer[3];
+			FT_Data_Struct->wheel_speed_rr	 = buffer[4] << 8;
+			FT_Data_Struct->wheel_speed_rr	|= buffer[5];
+			FT_Data_Struct->wheel_speed_rl 	 = buffer[6] << 8;
+			FT_Data_Struct->wheel_speed_rl 	|= buffer[7];
+
+			return;
+		}
+
+		else if((ExtId & 0xFFF) == 0x606)
+		{
+			FT_Data_Struct->accel_long		 = buffer[0] << 8;
+			FT_Data_Struct->accel_long		|= buffer[1];
+			FT_Data_Struct->accel_lat		 = buffer[2] << 8;
+			FT_Data_Struct->accel_lat		|= buffer[3];
+			FT_Data_Struct->yaw_rate_pitch	 = buffer[4] << 8;
+			FT_Data_Struct->yaw_rate_pitch	|= buffer[5];
+			FT_Data_Struct->yaw_rate_roll	 = buffer[6] << 8;
+			FT_Data_Struct->yaw_rate_roll	|= buffer[7];
+
+			return;
+		}
+
+		else if((ExtId & 0xFFF) == 0x607)
+		{
+			FT_Data_Struct->lambda_correction  = buffer[0] << 8;
+			FT_Data_Struct->lambda_correction |= buffer[1];
+			FT_Data_Struct->fuel_flow_total	   = buffer[2] << 8;
+			FT_Data_Struct->fuel_flow_total	  |= buffer[3];
 
 			return;
 		}
@@ -303,6 +343,9 @@ static void FT_CAN_ProcessData(FT_Data* FT_Data_Struct)
 			break;
 		case 0x008D: //Pit Limit Switch
 			FT_Data_Struct->pit_limiter = data;
+			break;
+		case 0x0150: //Total Fuel Flow
+			FT_Data_Struct->fuel_flow_total = data;
 			break;
 
 #ifdef FT_CAN_LAMBDA
@@ -717,9 +760,6 @@ static void FT_CAN_ProcessData(FT_Data* FT_Data_Struct)
 		case 0x014A: //Self Dial Time
 			FT_Data_Struct->self_dial = data;
 			break;
-		case 0x0150: //Total Fuel Flow
-			FT_Data_Struct->total_fuel_flow = data;
-			break;
 		case 0x0151: //Brake Pressure
 			FT_Data_Struct->brake_pressure = data;
 			break;
@@ -733,6 +773,8 @@ static void FT_CAN_ProcessData(FT_Data* FT_Data_Struct)
 #endif
 
 	FT_CAN_ProcessCustomData(id, data);
+
+	return;
 }
 
 __weak void FT_CAN_ProcessCustomData(uint16_t id, uint16_t data)
