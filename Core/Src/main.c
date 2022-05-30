@@ -190,7 +190,7 @@ int main(void)
 	  if((accMsg[PDM_SAVE] >= perMsg[PDM_SAVE]) && (perMsg[PDM_SAVE] != MSG_DISABLED))
 	  {
 		  accMsg[PDM_SAVE] -= perMsg[PDM_SAVE];
-//		  Principal_Transmit_Msg(&hcan1, PDM_SAVE);
+		  Principal_Transmit_Msg(&hcan1, PDM_SAVE);
 	  }
 
 	  if(accMsg[VERIFY_LEDS] >= MSG_FREQ_5HZ)

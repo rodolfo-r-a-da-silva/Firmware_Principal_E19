@@ -12,15 +12,15 @@ static HAL_StatusTypeDef Save_EEPROM(I2C_HandleTypeDef* hi2c);
 
 void Principal_Init(CAN_HandleTypeDef* hcan, I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim)
 {
-//	if(Load_EEPROM(hi2c) != HAL_OK)
+	if(Load_EEPROM(hi2c) != HAL_OK)
 		Principal_Hard_Code_Config();
 
 //	rtcDate.Year = 22;
 //	rtcDate.Month = 5;
-//	rtcDate.Date = 17;
-//	rtcDate.WeekDay = RTC_WEEKDAY_TUESDAY;
-//	rtcTime.Hours = 23;
-//	rtcTime.Minutes = 9;
+//	rtcDate.Date = 27;
+//	rtcDate.WeekDay = RTC_WEEKDAY_FRIDAY;
+//	rtcTime.Hours = 19;
+//	rtcTime.Minutes = 54;
 //	rtcTime.Seconds = 0;
 //	HAL_RTCEx_SetCoarseCalib(&hrtc, RTC_CALIBSIGN_NEGATIVE, 55);
 //	HAL_RTC_SetDate(&hrtc, &rtcDate, RTC_FORMAT_BIN);
@@ -143,7 +143,7 @@ __weak void Principal_Hard_Code_Config(){
 	thresholdRPM = 5000;
 	thresholdSpeed = 1;
 
-//	Save_EEPROM(&hi2c1);
+	Save_EEPROM(&hi2c1);
 }
 
 static HAL_StatusTypeDef Load_EEPROM(I2C_HandleTypeDef* hi2c)
@@ -151,7 +151,7 @@ static HAL_StatusTypeDef Load_EEPROM(I2C_HandleTypeDef* hi2c)
 	uint8_t buffer[EEPROM_BUFFER_SIZE];
 	HAL_StatusTypeDef retVal = HAL_OK;
 
-	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_READ, NULL, 0, EEPROM_READ_TIMEOUT);
+	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, 0x00, 1, EEPROM_WRITE_TIMEOUT);
 
 	retVal = HAL_I2C_Master_Receive(hi2c, EEPROM_ADDRESS_READ, buffer, sizeof(buffer), EEPROM_READ_TIMEOUT);
 
@@ -198,9 +198,6 @@ static HAL_StatusTypeDef Save_EEPROM(I2C_HandleTypeDef* hi2c)
 	uint8_t buffer[EEPROM_BUFFER_SIZE];
 	HAL_StatusTypeDef retVal = HAL_OK;
 
-	for(uint16_t i = 0; i < EEPROM_BUFFER_SIZE; i++)
-		buffer[i] = 0;
-
 	__FREQ_TO_BUFFER(buffer[0], perMsg[ANALOG_1_4]);
 
 	__FREQ_TO_BUFFER(buffer[1], perMsg[ANALOG_5_8]);
@@ -233,8 +230,11 @@ static HAL_StatusTypeDef Save_EEPROM(I2C_HandleTypeDef* hi2c)
 	buffer[17] = thresholdSpeed >> 8;
 	buffer[18] = thresholdSpeed & 0xff;
 
-	for(uint16_t i = 0; i < EEPROM_BUFFER_SIZE; i += 4)
-		retVal = HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, &buffer[i], 4, EEPROM_WRITE_TIMEOUT);
+
+	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, 0x00, 1, EEPROM_WRITE_TIMEOUT);
+	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, &buffer[0], 8, EEPROM_WRITE_TIMEOUT);
+	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, &buffer[8], 8, EEPROM_WRITE_TIMEOUT);
+	retVal = HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, &buffer[16], 3, EEPROM_WRITE_TIMEOUT);
 
 	return retVal;
 }
