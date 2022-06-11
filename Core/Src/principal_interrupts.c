@@ -14,7 +14,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		verifyCAN |= 2;
 
 		if((rxHeader.IDE == CAN_ID_STD) && ((rxHeader.StdId & CAN_DAQ_MASK) == CAN_DAQ_FILTER) && (flagDatalogger == DL_SAVE))
-			Principal_Datalogger_Save_Buffer(hcan, rxHeader.StdId, rxHeader.DLC, rxData, &dirStruct, &fileStruct);
+			Principal_Datalogger_Save_Buffer(hcan, rxHeader.StdId, rxHeader.DLC, rxData);
 
 		else if(rxHeader.IDE == CAN_ID_EXT)
 		{
@@ -49,7 +49,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if(((inputConfig & 0x02) == INPUT_DATALOGGER_PIN_0)
 				&& ((((inputConfig & 0x08) == INPUT_DATALOGGER_FALLING_EDGE) && (pinLevel == GPIO_PIN_RESET))
 				|| (((inputConfig & 0x08) == INPUT_DATALOGGER_RISING_EDGE) && (pinLevel == GPIO_PIN_SET))))
-			Principal_Datalogger_Button(&dirStruct, &fileStruct);
+			Principal_Datalogger_Button();
 	}
 
 	if(GPIO_Pin == EXTI1_Pin)
@@ -64,7 +64,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if(((inputConfig & 0x02) == INPUT_DATALOGGER_PIN_1)
 				&& ((((inputConfig & 0x08) == INPUT_DATALOGGER_FALLING_EDGE) && (pinLevel == GPIO_PIN_RESET))
 				|| (((inputConfig & 0x08) == INPUT_DATALOGGER_RISING_EDGE) && (pinLevel == GPIO_PIN_SET))))
-			Principal_Datalogger_Button(&dirStruct, &fileStruct);
+			Principal_Datalogger_Button();
 	}
 }
 

@@ -22,21 +22,6 @@ uint32_t lapTime;
 FT_Data ecuData;
 PDM_Data pdmReadings;
 
-//DATALOGGER
-uint8_t
-	dataloggerCD,
-	dataloggerBuffer[DATALOGGER_BUFFER_SIZE];
-uint16_t dataloggerBufferPosition;
-int16_t
-	thresholdBeacon,
-	thresholdRPM,
-	thresholdSpeed;
-DIR dirStruct;
-FATFS fatfsStruct;
-FIL fileStruct;
-TCHAR dirString[DIRECTORY_STRING_SIZE];
-TCHAR logString[LOG_STRING_SIZE];
-
 //FLAGS
 uint8_t flagCAN;
 USB_Flag_Typedef flagUSB;

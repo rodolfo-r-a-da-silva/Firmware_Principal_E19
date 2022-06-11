@@ -27,11 +27,12 @@
 #define PDM_FIRST_ID	0x0A
 
 //CONFIGURATION
-#define EEPROM_ADDRESS_READ		0xA1
-#define EEPROM_ADDRESS_WRITE	0xA0
-#define EEPROM_BUFFER_SIZE		24
-#define EEPROM_READ_TIMEOUT		5
-#define EEPROM_WRITE_TIMEOUT	10
+#define EEPROM_ADDRESS_READ			0xA1
+#define EEPROM_ADDRESS_WRITE		0xA0
+#define EEPROM_BUFFER_SIZE_READ		19
+#define EEPROM_BUFFER_SIZE_WRITE	17
+#define EEPROM_TIMEOUT_READ			5
+#define EEPROM_TIMEOUT_WRITE		10
 
 //DATA
 #define ADC_THRESHOLD		30
@@ -40,12 +41,14 @@
 #define NBR_OF_LOCAL_MSGS	3
 
 //DATALOGGER
+//#define DATALOGGER_LEGACY_NAME
+#define DATALOGGER_SYNC
 #define DATALOGGER_COOLDOWN			250
 #define DATALOGGER_BUFFER_SIZE		DATALOGGER_BUFFER_16KB
 #define DATALOGGER_MSG_MAX_SIZE		13
 #define DATALOGGER_SAVE_THR			(DATALOGGER_BUFFER_SIZE - DATALOGGER_MSG_MAX_SIZE)
 #define DATALOGGER_SAVE_TIME_THR	1000
-#define DIRECTORY_STRING_SIZE		9
+#define DIR_STRING_SIZE				9
 #define LOG_STRING_SIZE				30
 #define RTC_STORE_DATA				0xE35C
 
@@ -84,6 +87,7 @@
 #define INPUT_DATALOGGER_RISING_EDGE	0x08
 
 //PINS
+#define SDIO_CD_PIN		GPIOC, GPIO_PIN_7
 #define VBUS_PIN		GPIOA, GPIO_PIN_9
 #define LED_OK			LED0_GPIO_Port, LED0_Pin
 #define LED_DATALOGGER	LED1_GPIO_Port, LED1_Pin
@@ -239,18 +243,15 @@ extern FT_Data ecuData;
 extern PDM_Data pdmReadings;
 
 //DATALOGGER
-extern uint8_t
-	dataloggerCD,
-	dataloggerBuffer[DATALOGGER_BUFFER_SIZE];
+extern uint8_t dataloggerBuffer[DATALOGGER_BUFFER_SIZE];
 extern uint16_t dataloggerBufferPosition;
-extern int16_t
-	thresholdBeacon,
-	thresholdRPM,
-	thresholdSpeed;
+extern int16_t thresholdBeacon;
+extern int16_t thresholdRPM;
+extern int16_t thresholdSpeed;
 extern DIR dirStruct;
 extern FATFS fatfsStruct;
 extern FIL fileStruct;
-extern TCHAR dirString[DIRECTORY_STRING_SIZE];
+extern TCHAR dirString[DIR_STRING_SIZE];
 extern TCHAR logString[LOG_STRING_SIZE];
 
 //FLAGS
@@ -297,17 +298,17 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 void Principal_Hard_Code_Config();
 
 //DATALOGGER
-FRESULT Principal_Datalogger_Init(FATFS* fatfs_struct);
+FRESULT Principal_Datalogger_Init();
 
-FRESULT Principal_Datalogger_Start(char* dir, char* file, DIR* dir_struct, FIL* file_struct);
+FRESULT Principal_Datalogger_Start();
 
-FRESULT Principal_Datalogger_Finish(DIR* dir_struct, FIL* file_struct);
+FRESULT Principal_Datalogger_Finish();
 
-void Principal_Datalogger_Save_Buffer(CAN_HandleTypeDef* hcan, uint32_t data_id, uint8_t data_length, uint8_t* data_buffer, DIR* dir_struct, FIL* file_struct);
+void Principal_Datalogger_Save_Buffer(CAN_HandleTypeDef* hcan, uint32_t data_id, uint8_t data_length, uint8_t* data_buffer);
 
-void Principal_Datalogger_Button(DIR* dir_struct, FIL* file_struct);
+void Principal_Datalogger_Button();
 
-void Principal_Card_Detection(FATFS* fatfs_struct, DIR* dir_struct, FIL* file_struct);
+void Principal_Card_Detection();
 
 void Principal_Beacon_Detect();
 /*END FUNCTION PROTOTYPES*/

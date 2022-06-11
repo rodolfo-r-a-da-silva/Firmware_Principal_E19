@@ -153,7 +153,7 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 	txData[7] = adcBuffer[3] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
+		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData);
 
 	if((accCAN[ANALOG_1_4] >= perCAN[ANALOG_1_4]) && (perCAN[ANALOG_1_4] != MSG_DISABLED))
 	{
@@ -195,7 +195,7 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 	txData[7] = adcBuffer[7] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
+		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData);
 
 	if((accCAN[ANALOG_5_8] >= perCAN[ANALOG_5_8]) && (perCAN[ANALOG_5_8] != MSG_DISABLED))
 	{
@@ -240,7 +240,7 @@ static void Tx_Analog_9_12(CAN_HandleTypeDef* hcan)
 	txData[7] = adcBuffer[11] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
+		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData);
 
 	if((accCAN[ANALOG_9_12] >= perCAN[ANALOG_9_12]) && (perCAN[ANALOG_9_12] != MSG_DISABLED))
 	{
@@ -278,7 +278,7 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
+		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData);
 
 	if((accCAN[RTC_MSG] >= perCAN[RTC_MSG]) && (perCAN[RTC_MSG] != MSG_DISABLED))
 	{
@@ -326,7 +326,7 @@ static void Tx_Verify(CAN_HandleTypeDef* hcan)
 	__FREQ_TO_BUFFER(txData[7], perMsg[ECU_SAVE]);
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
+		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData);
 
 	if((accCAN[VERIFY_MSG] >= perCAN[VERIFY_MSG]) && (perCAN[VERIFY_MSG] != MSG_DISABLED))
 	{
@@ -367,7 +367,7 @@ static void Tx_Beacon(CAN_HandleTypeDef* hcan)
 	txData[4] = buffer[2] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
-		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData, &dirStruct, &fileStruct);
+		Principal_Datalogger_Save_Buffer(hcan, txHeader.StdId, txHeader.DLC, txData);
 
 	if((accCAN[BEACON_MSG] >= perCAN[BEACON_MSG]) && (perCAN[BEACON_MSG] != MSG_DISABLED))
 	{
@@ -406,7 +406,7 @@ static void Save_ECU(CAN_HandleTypeDef* hcan)
 	buffer[6] = ecuData.ect >> 8;
 	buffer[7] = ecuData.ect & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = ECU_FIRST_ID + 1;
 	length = 8;
@@ -420,7 +420,7 @@ static void Save_ECU(CAN_HandleTypeDef* hcan)
 	buffer[6] = ecuData.coolant_pressure >> 8;
 	buffer[7] = ecuData.coolant_pressure & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = ECU_FIRST_ID + 2;
 	length = 8;
@@ -434,7 +434,7 @@ static void Save_ECU(CAN_HandleTypeDef* hcan)
 	buffer[6] = ecuData.wheel_speed_rl;
 	buffer[7] = ecuData.wheel_speed_rr;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = ECU_FIRST_ID + 3;
 	length = 8;
@@ -448,7 +448,7 @@ static void Save_ECU(CAN_HandleTypeDef* hcan)
 	buffer[6] = ecuData.injection_bank_a_time >> 8;
 	buffer[7] = ecuData.injection_bank_a_time & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = ECU_FIRST_ID + 4;
 	length = 2;
@@ -456,7 +456,7 @@ static void Save_ECU(CAN_HandleTypeDef* hcan)
 	buffer[0] = ecuData.lambda_correction >> 8;
 	buffer[1] = ecuData.lambda_correction & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = ECU_FIRST_ID + 5;
 	length = 8;
@@ -470,7 +470,7 @@ static void Save_ECU(CAN_HandleTypeDef* hcan)
 	buffer[6] = ecuData.yaw_rate_roll >> 8;
 	buffer[7] = ecuData.yaw_rate_roll & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	return;
 }
@@ -494,7 +494,7 @@ static void Save_PDM(CAN_HandleTypeDef* hcan)
 	buffer[6] = pdmReadings.Current_Buffer[3] << 8;
 	buffer[7] = pdmReadings.Current_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = PDM_FIRST_ID + 1;
 	length = 8;
@@ -508,7 +508,7 @@ static void Save_PDM(CAN_HandleTypeDef* hcan)
 	buffer[6] = pdmReadings.Current_Buffer[7] << 8;
 	buffer[7] = pdmReadings.Current_Buffer[7] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = PDM_FIRST_ID + 2;
 	length = 8;
@@ -522,7 +522,7 @@ static void Save_PDM(CAN_HandleTypeDef* hcan)
 	buffer[6] = pdmReadings.Current_Buffer[11] << 8;
 	buffer[7] = pdmReadings.Current_Buffer[11] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = PDM_FIRST_ID + 3;
 	length = 8;
@@ -536,7 +536,7 @@ static void Save_PDM(CAN_HandleTypeDef* hcan)
 	buffer[6] = pdmReadings.Current_Buffer[15] << 8;
 	buffer[7] = pdmReadings.Current_Buffer[15] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = PDM_FIRST_ID + 4;
 	length = 8;
@@ -550,7 +550,7 @@ static void Save_PDM(CAN_HandleTypeDef* hcan)
 	buffer[6] = pdmReadings.Tempetature_Buffer[3] << 8;
 	buffer[7] = pdmReadings.Tempetature_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = PDM_FIRST_ID + 5;
 	length = 8;
@@ -564,7 +564,7 @@ static void Save_PDM(CAN_HandleTypeDef* hcan)
 	buffer[6] = pdmReadings.Tempetature_Buffer[7] << 8;
 	buffer[7] = pdmReadings.Tempetature_Buffer[7] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = PDM_FIRST_ID + 6;
 	length = 8;
@@ -578,7 +578,7 @@ static void Save_PDM(CAN_HandleTypeDef* hcan)
 	buffer[6] = pdmReadings.Duty_Cycle_Buffer[3] << 8;
 	buffer[7] = pdmReadings.Duty_Cycle_Buffer[3] & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	id = PDM_FIRST_ID + 7;
 	length = 4;
@@ -588,7 +588,7 @@ static void Save_PDM(CAN_HandleTypeDef* hcan)
 	buffer[2] = pdmReadings.Output_Verify << 8;
 	buffer[3] = pdmReadings.Output_Verify & 0xff;
 
-	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer, &dirStruct, &fileStruct);
+	Principal_Datalogger_Save_Buffer(hcan, id, length, buffer);
 
 	return;
 }

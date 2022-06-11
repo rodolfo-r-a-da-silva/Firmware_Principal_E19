@@ -15,12 +15,14 @@ void Principal_Init(CAN_HandleTypeDef* hcan, I2C_HandleTypeDef* hi2c, TIM_Handle
 	if(Load_EEPROM(hi2c) != HAL_OK)
 		Principal_Hard_Code_Config();
 
+//	Load_EEPROM(hi2c);
+
 //	rtcDate.Year = 22;
-//	rtcDate.Month = 5;
-//	rtcDate.Date = 27;
-//	rtcDate.WeekDay = RTC_WEEKDAY_FRIDAY;
-//	rtcTime.Hours = 19;
-//	rtcTime.Minutes = 54;
+//	rtcDate.Month = 06;
+//	rtcDate.Date = 07;
+//	rtcDate.WeekDay = RTC_WEEKDAY_TUESDAY;
+//	rtcTime.Hours = 22;
+//	rtcTime.Minutes = 32;
 //	rtcTime.Seconds = 0;
 //	HAL_RTCEx_SetCoarseCalib(&hrtc, RTC_CALIBSIGN_NEGATIVE, 55);
 //	HAL_RTC_SetDate(&hrtc, &rtcDate, RTC_FORMAT_BIN);
@@ -36,7 +38,7 @@ void Principal_Init(CAN_HandleTypeDef* hcan, I2C_HandleTypeDef* hi2c, TIM_Handle
 	HAL_ADC_Start_DMA(&hadc2, (uint32_t*) &adcBuffer[0], 6);
 	HAL_TIM_Base_Start_IT(htim);
 
-	Principal_Datalogger_Init(&fatfsStruct);
+	Principal_Datalogger_Init();
 
 	Principal_CAN_Start(hcan);
 }
@@ -148,38 +150,27 @@ __weak void Principal_Hard_Code_Config(){
 
 static HAL_StatusTypeDef Load_EEPROM(I2C_HandleTypeDef* hi2c)
 {
-	uint8_t buffer[EEPROM_BUFFER_SIZE];
+	uint8_t buffer[EEPROM_BUFFER_SIZE_READ];
 	HAL_StatusTypeDef retVal = HAL_OK;
 
-	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, 0x00, 1, EEPROM_WRITE_TIMEOUT);
+	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, 0x00, 1, EEPROM_TIMEOUT_WRITE);
 
-	retVal = HAL_I2C_Master_Receive(hi2c, EEPROM_ADDRESS_READ, buffer, sizeof(buffer), EEPROM_READ_TIMEOUT);
+	retVal = HAL_I2C_Master_Receive(hi2c, EEPROM_ADDRESS_READ, buffer, EEPROM_BUFFER_SIZE_READ, EEPROM_TIMEOUT_READ);
 
 	if(retVal != HAL_OK)
 		return retVal;
 
 	__BUFFER_TO_FREQ(buffer[0], perMsg[ANALOG_1_4]);
-
 	__BUFFER_TO_FREQ(buffer[1], perMsg[ANALOG_5_8]);
-
 	__BUFFER_TO_FREQ(buffer[2], perMsg[ANALOG_9_12]);
-
 	__BUFFER_TO_FREQ(buffer[3], perMsg[RTC_MSG]);
-
 	__BUFFER_TO_FREQ(buffer[4], perMsg[VERIFY_MSG]);
-
 	__BUFFER_TO_FREQ(buffer[5], perMsg[ECU_SAVE]);
-
 	__BUFFER_TO_FREQ(buffer[6], perMsg[PDM_SAVE]);
-
 	__BUFFER_TO_FREQ(buffer[7], perCAN[ANALOG_1_4]);
-
 	__BUFFER_TO_FREQ(buffer[8], perCAN[ANALOG_5_8]);
-
 	__BUFFER_TO_FREQ(buffer[9], perCAN[ANALOG_9_12]);
-
 	__BUFFER_TO_FREQ(buffer[10], perCAN[RTC_MSG]);
-
 	__BUFFER_TO_FREQ(buffer[11], perCAN[VERIFY_MSG]);
 
 	inputConfig 	 = buffer[12];
@@ -195,46 +186,37 @@ static HAL_StatusTypeDef Load_EEPROM(I2C_HandleTypeDef* hi2c)
 
 static HAL_StatusTypeDef Save_EEPROM(I2C_HandleTypeDef* hi2c)
 {
-	uint8_t buffer[EEPROM_BUFFER_SIZE];
-	HAL_StatusTypeDef retVal = HAL_OK;
+	uint8_t buffer[EEPROM_BUFFER_SIZE_WRITE];
+//	HAL_StatusTypeDef retVal = HAL_OK;
 
-	__FREQ_TO_BUFFER(buffer[0], perMsg[ANALOG_1_4]);
+	buffer[0] = 0x00;
 
-	__FREQ_TO_BUFFER(buffer[1], perMsg[ANALOG_5_8]);
+	__FREQ_TO_BUFFER(buffer[1], perMsg[ANALOG_1_4]);
+	__FREQ_TO_BUFFER(buffer[2], perMsg[ANALOG_5_8]);
+	__FREQ_TO_BUFFER(buffer[3], perMsg[ANALOG_9_12]);
+	__FREQ_TO_BUFFER(buffer[4], perMsg[RTC_MSG]);
+	__FREQ_TO_BUFFER(buffer[5], perMsg[VERIFY_MSG]);
+	__FREQ_TO_BUFFER(buffer[6], perMsg[ECU_SAVE]);
+	__FREQ_TO_BUFFER(buffer[7], perMsg[PDM_SAVE]);
+	__FREQ_TO_BUFFER(buffer[8], perCAN[ANALOG_1_4]);
+	__FREQ_TO_BUFFER(buffer[9], perCAN[ANALOG_5_8]);
+	__FREQ_TO_BUFFER(buffer[10], perCAN[ANALOG_9_12]);
+	__FREQ_TO_BUFFER(buffer[11], perCAN[RTC_MSG]);
+	__FREQ_TO_BUFFER(buffer[12], perCAN[VERIFY_MSG]);
 
-	__FREQ_TO_BUFFER(buffer[2], perMsg[ANALOG_9_12]);
+	buffer[13] = inputConfig;
+	buffer[14] = thresholdBeacon >> 8;
+	buffer[15] = thresholdBeacon & 0xff;
+	buffer[16] = thresholdRPM >> 8;
 
-	__FREQ_TO_BUFFER(buffer[3], perMsg[RTC_MSG]);
+	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, buffer, EEPROM_BUFFER_SIZE_WRITE, EEPROM_TIMEOUT_WRITE);
 
-	__FREQ_TO_BUFFER(buffer[4], perMsg[VERIFY_MSG]);
+	HAL_Delay(EEPROM_TIMEOUT_WRITE);
 
-	__FREQ_TO_BUFFER(buffer[5], perMsg[ECU_SAVE]);
+	buffer[0] = 0x10;
+	buffer[1] = thresholdRPM & 0xff;
+	buffer[2] = thresholdSpeed >> 8;
+	buffer[3] = thresholdSpeed & 0xff;
 
-	__FREQ_TO_BUFFER(buffer[6], perMsg[PDM_SAVE]);
-
-	__FREQ_TO_BUFFER(buffer[7], perCAN[ANALOG_1_4]);
-
-	__FREQ_TO_BUFFER(buffer[8], perCAN[ANALOG_5_8]);
-
-	__FREQ_TO_BUFFER(buffer[9], perCAN[ANALOG_9_12]);
-
-	__FREQ_TO_BUFFER(buffer[10], perCAN[RTC_MSG]);
-
-	__FREQ_TO_BUFFER(buffer[11], perCAN[VERIFY_MSG]);
-
-	buffer[12] = inputConfig;
-	buffer[13] = thresholdBeacon >> 8;
-	buffer[14] = thresholdBeacon & 0xff;
-	buffer[15] = thresholdRPM >> 8;
-	buffer[16] = thresholdRPM & 0xff;
-	buffer[17] = thresholdSpeed >> 8;
-	buffer[18] = thresholdSpeed & 0xff;
-
-
-	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, 0x00, 1, EEPROM_WRITE_TIMEOUT);
-	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, &buffer[0], 8, EEPROM_WRITE_TIMEOUT);
-	HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, &buffer[8], 8, EEPROM_WRITE_TIMEOUT);
-	retVal = HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, &buffer[16], 3, EEPROM_WRITE_TIMEOUT);
-
-	return retVal;
+	return HAL_I2C_Master_Transmit(hi2c, EEPROM_ADDRESS_WRITE, buffer, 4, EEPROM_TIMEOUT_WRITE);
 }

@@ -50,8 +50,6 @@ CAN_HandleTypeDef hcan1;
 
 I2C_HandleTypeDef hi2c1;
 
-IWDG_HandleTypeDef hiwdg;
-
 RTC_HandleTypeDef hrtc;
 
 SD_HandleTypeDef hsd;
@@ -69,7 +67,6 @@ void SystemClock_Config(void);
 void PeriphCommonClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_IWDG_Init(void);
 static void MX_SDIO_SD_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_RTC_Init(void);
@@ -118,7 +115,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-//  MX_IWDG_Init();
   MX_SDIO_SD_Init();
   MX_ADC1_Init();
   MX_RTC_Init();
@@ -138,11 +134,11 @@ int main(void)
   while (1)
   {
 	  //Checks card detect pin level change for datalogger initialization or deinitialization
-	  Principal_Card_Detection(&fatfsStruct, &dirStruct, &fileStruct);
+	  Principal_Card_Detection();
 
 	  //Checks if data is being saved and starts saving if conditions are met
 	  if((flagDatalogger == DL_NO_SAVE) || (flagDatalogger == DL_BUT_PRESS))
-		  Principal_Datalogger_Start(dirString, logString, &dirStruct, &fileStruct);
+		  Principal_Datalogger_Start();
 
 	  //Analog inputs 1-4 CAN message
 	  if((accMsg[ANALOG_1_4] >= perMsg[ANALOG_1_4]) && (perMsg[ANALOG_1_4] != MSG_DISABLED))
@@ -225,11 +221,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
-                              |RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 8;
@@ -550,34 +544,6 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
-  * @brief IWDG Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_IWDG_Init(void)
-{
-
-  /* USER CODE BEGIN IWDG_Init 0 */
-
-  /* USER CODE END IWDG_Init 0 */
-
-  /* USER CODE BEGIN IWDG_Init 1 */
-
-  /* USER CODE END IWDG_Init 1 */
-  hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
-  hiwdg.Init.Reload = 124;
-  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN IWDG_Init 2 */
-
-  /* USER CODE END IWDG_Init 2 */
 
 }
 
