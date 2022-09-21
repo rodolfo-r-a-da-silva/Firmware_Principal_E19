@@ -194,6 +194,8 @@ typedef struct{
 
 	int16_t accel_lat;				//*0.01		(G)
 	int16_t accel_long;				//*0.01		(G)
+	int16_t angle_pitch;			//*0.01		(°/s)
+	int16_t angle_roll;				//*0.01		(°/s)
 	int16_t ect;					//*0.1		(°C)
 	int16_t coolant_pressure;		//*0.001	(Bar)
 	int16_t iat;					//*0.1		(°C)
@@ -212,8 +214,6 @@ typedef struct{
 	int16_t wheel_speed_fr;			//*1		(Km/h)
 	int16_t wheel_speed_rl;			//*1		(Km/h)
 	int16_t wheel_speed_rr;			//*1		(Km/h)
-	int16_t yaw_rate_pitch;			//*0.01		(°/s)
-	int16_t yaw_rate_roll;			//*0.01		(°/s)
 
 #ifndef FT_CAN_FIXED
 	uint16_t data_content;

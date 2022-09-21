@@ -14,7 +14,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		verifyCAN |= 2;
 
 		if((rxHeader.IDE == CAN_ID_STD) && ((rxHeader.StdId & CAN_DAQ_MASK) == CAN_DAQ_FILTER) && (flagDatalogger == DL_SAVE))
+#ifdef DATALOGGER_NO_BUFFER
+			Principal_Datalogger_Save_Data(hcan, rxHeader.StdId, rxHeader.DLC, rxData);
+#else
 			Principal_Datalogger_Save_Buffer(hcan, rxHeader.StdId, rxHeader.DLC, rxData);
+#endif
 
 		else if(rxHeader.IDE == CAN_ID_EXT)
 		{

@@ -1,5 +1,5 @@
 ../Core/Src/principal_config.c:13:6:Principal_Init	24	static
 ../Core/Src/principal_config.c:46:19:Principal_Receive_Config	32	static
-../Core/Src/principal_config.c:125:13:Principal_Hard_Code_Config	8	static
-../Core/Src/principal_config.c:151:26:Load_EEPROM	48	static
-../Core/Src/principal_config.c:187:26:Save_EEPROM	48	static
+../Core/Src/principal_config.c:131:13:Principal_Hard_Code_Config	8	static
+../Core/Src/principal_config.c:157:26:Load_EEPROM	48	static
+../Core/Src/principal_config.c:193:26:Save_EEPROM	40	static

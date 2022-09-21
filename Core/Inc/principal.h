@@ -30,12 +30,12 @@
 #define EEPROM_ADDRESS_READ			0xA1
 #define EEPROM_ADDRESS_WRITE		0xA0
 #define EEPROM_BUFFER_SIZE_READ		19
-#define EEPROM_BUFFER_SIZE_WRITE	17
+#define EEPROM_BUFFER_SIZE_WRITE	9
 #define EEPROM_TIMEOUT_READ			5
 #define EEPROM_TIMEOUT_WRITE		10
 
 //DATA
-#define ADC_THRESHOLD		30
+#define ADC_THRESHOLD		90
 #define NBR_OF_CHANNELS		12
 #define NBR_OF_MSGS			6
 #define NBR_OF_LOCAL_MSGS	3
@@ -43,8 +43,9 @@
 //DATALOGGER
 //#define DATALOGGER_LEGACY_NAME
 #define DATALOGGER_SYNC
+#define DATALOGGER_NO_BUFFER
 #define DATALOGGER_COOLDOWN			250
-#define DATALOGGER_BUFFER_SIZE		DATALOGGER_BUFFER_16KB
+#define DATALOGGER_BUFFER_SIZE		DATALOGGER_BUFFER_4KB
 #define DATALOGGER_MSG_MAX_SIZE		13
 #define DATALOGGER_SAVE_THR			(DATALOGGER_BUFFER_SIZE - DATALOGGER_MSG_MAX_SIZE)
 #define DATALOGGER_SAVE_TIME_THR	1000
@@ -177,6 +178,23 @@
 			(__BUFFER__) = 0;					\
 			break;								\
 	}
+
+#define __DL_THR_COND() !((ecuData.rpm >= thresholdRPM)					\
+						&& ((ecuData.wheel_speed_fl >= thresholdSpeed)	\
+						|| (ecuData.wheel_speed_fr >= thresholdSpeed)	\
+						|| (ecuData.wheel_speed_rl >= thresholdSpeed)	\
+						|| (ecuData.wheel_speed_rr >= thresholdSpeed)))
+
+#define __PRINCIPAL_TX_DATA(__HCAN__, __CAN_MSG__)												\
+	if((accCAN[__CAN_MSG__] >= perCAN[__CAN_MSG__]) && (perCAN[__CAN_MSG__] != __CAN_MSG__))	\
+	{																							\
+		accCAN[__CAN_MSG__] -= perCAN[__CAN_MSG__];												\
+		if(HAL_CAN_AddTxMessage(__HCAN__, &txHeader, txData, &txMailbox) == HAL_OK)				\
+			verifyCAN |= 1;																		\
+		else																					\
+			verifyCAN &= 0x02;																	\
+		for(uint8_t i = 0; HAL_CAN_GetTxMailboxesFreeLevel(__HCAN__) != 3 && i < 3; i++);		\
+	}
 /*END MACROS*/
 
 /*BEGIN ENUMS*/
@@ -190,10 +208,17 @@ typedef enum{
 	DL_NO_SAVE = 0x00,
 	DL_SAVE,
 	DL_NO_CARD,
-	DL_BUT_PRESS,
-	DL_ERROR,
-	DL_TEST_OPT
+	DL_BUT_START,
+	DL_ERROR
 }DL_Flag_TypeDef;
+
+typedef enum{
+	CAN_COMMAND_PER_MSG,
+	CAN_COMMAND_PER_CAN,
+	CAN_COMMAND_THR,
+	CAN_COMMAND_RTC,
+	CAN_COMMAND_FMT
+}CAN_Command_TypeDef;
 
 typedef enum{
 	ANALOG_1_4 = 0x00,
@@ -228,9 +253,8 @@ extern RTC_HandleTypeDef hrtc;
 extern SD_HandleTypeDef hsd;
 
 //CAN
-extern uint8_t
-	rxData[8],
-	txData[8];
+extern uint8_t rxData[8];
+extern uint8_t txData[8];
 extern uint32_t txMailbox;
 extern CAN_RxHeaderTypeDef rxHeader;
 extern CAN_TxHeaderTypeDef txHeader;
@@ -238,6 +262,7 @@ extern CAN_TxHeaderTypeDef txHeader;
 //DATA
 extern uint8_t lapNumber;
 extern uint16_t adcBuffer[NBR_OF_CHANNELS];
+extern uint32_t dataloggerWrite;
 extern uint32_t lapTime;
 extern FT_Data ecuData;
 extern PDM_Data pdmReadings;
@@ -268,14 +293,12 @@ extern RTC_DateTypeDef rtcDate;
 extern RTC_TimeTypeDef rtcTime;
 
 //TIMING
-extern uint16_t
-	perCAN[NBR_OF_MSGS],
-	perMsg[NBR_OF_MSGS + NBR_OF_LOCAL_MSGS];
-extern uint32_t
-	accDatalogger[3],
-	accCAN[NBR_OF_MSGS],
-	accMsg[NBR_OF_MSGS + NBR_OF_LOCAL_MSGS],
-	accLap;
+extern uint16_t	perCAN[NBR_OF_MSGS];
+extern uint16_t perMsg[NBR_OF_MSGS + NBR_OF_LOCAL_MSGS];
+extern uint32_t accDatalogger[3];
+extern uint32_t accCAN[NBR_OF_MSGS];
+extern uint32_t accMsg[NBR_OF_MSGS + NBR_OF_LOCAL_MSGS];
+extern uint32_t accLap;
 
 //VERIFYS
 extern uint8_t	verifyCAN;
@@ -303,6 +326,8 @@ FRESULT Principal_Datalogger_Init();
 FRESULT Principal_Datalogger_Start();
 
 FRESULT Principal_Datalogger_Finish();
+
+void Principal_Datalogger_Save_Data(CAN_HandleTypeDef* hcan, uint32_t data_id, uint8_t data_length, uint8_t* data_buffer);
 
 void Principal_Datalogger_Save_Buffer(CAN_HandleTypeDef* hcan, uint32_t data_id, uint8_t data_length, uint8_t* data_buffer);
 

@@ -53,8 +53,6 @@ I2C_HandleTypeDef hi2c1;
 RTC_HandleTypeDef hrtc;
 
 SD_HandleTypeDef hsd;
-DMA_HandleTypeDef hdma_sdio_rx;
-DMA_HandleTypeDef hdma_sdio_tx;
 
 TIM_HandleTypeDef htim7;
 
@@ -136,9 +134,8 @@ int main(void)
 	  //Checks card detect pin level change for datalogger initialization or deinitialization
 	  Principal_Card_Detection();
 
-	  //Checks if data is being saved and starts saving if conditions are met
-	  if((flagDatalogger == DL_NO_SAVE) || (flagDatalogger == DL_BUT_PRESS))
-		  Principal_Datalogger_Start();
+	  //Starts saving data if conditions are met
+	  Principal_Datalogger_Start();
 
 	  //Analog inputs 1-4 CAN message
 	  if((accMsg[ANALOG_1_4] >= perMsg[ANALOG_1_4]) && (perMsg[ANALOG_1_4] != MSG_DISABLED))
@@ -186,7 +183,7 @@ int main(void)
 	  if((accMsg[PDM_SAVE] >= perMsg[PDM_SAVE]) && (perMsg[PDM_SAVE] != MSG_DISABLED))
 	  {
 		  accMsg[PDM_SAVE] -= perMsg[PDM_SAVE];
-		  Principal_Transmit_Msg(&hcan1, PDM_SAVE);
+//		  Principal_Transmit_Msg(&hcan1, PDM_SAVE);
 	  }
 
 	  if(accMsg[VERIFY_LEDS] >= MSG_FREQ_5HZ)
@@ -630,7 +627,7 @@ static void MX_SDIO_SD_Init(void)
   hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
   hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
   hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
-  hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+  hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_ENABLE;
   hsd.Init.ClockDiv = 2;
   /* USER CODE BEGIN SDIO_Init 2 */
 
@@ -692,12 +689,6 @@ static void MX_DMA_Init(void)
   /* DMA2_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
-  /* DMA2_Stream3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
-  /* DMA2_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
 
 }
 

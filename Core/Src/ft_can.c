@@ -117,10 +117,10 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
 			FT_Data_Struct->accel_long		|= buffer[1];
 			FT_Data_Struct->accel_lat		 = buffer[2] << 8;
 			FT_Data_Struct->accel_lat		|= buffer[3];
-			FT_Data_Struct->yaw_rate_pitch	 = buffer[4] << 8;
-			FT_Data_Struct->yaw_rate_pitch	|= buffer[5];
-			FT_Data_Struct->yaw_rate_roll	 = buffer[6] << 8;
-			FT_Data_Struct->yaw_rate_roll	|= buffer[7];
+			FT_Data_Struct->angle_pitch	 = buffer[4] << 8;
+			FT_Data_Struct->angle_pitch	|= buffer[5];
+			FT_Data_Struct->angle_roll	 = buffer[6] << 8;
+			FT_Data_Struct->angle_roll	|= buffer[7];
 
 			return;
 		}
@@ -710,16 +710,16 @@ static void FT_CAN_ProcessData(FT_Data* FT_Data_Struct)
 			FT_Data_Struct->drag_speed = data;
 			break;
 		case 0x000C: //Wheel Speed FL
-			FT_Data_Struct->wheel_speed_fl = data;
+//			FT_Data_Struct->wheel_speed_fl = data;
 			break;
 		case 0x000D: //Wheel Speed FR
-			FT_Data_Struct->wheel_speed_fr = data;
+//			FT_Data_Struct->wheel_speed_fr = data;
 			break;
 		case 0x000E: //Wheel Speed RL
-			FT_Data_Struct->wheel_speed_rl = data;
+//			FT_Data_Struct->wheel_speed_rl = data;
 			break;
 		case 0x000F: //Wheel Speed RR
-			FT_Data_Struct->wheel_speed_rr = data;
+//			FT_Data_Struct->wheel_speed_rr = data;
 			break;
 		case 0x0010: //Driveshaft RPM
 			FT_Data_Struct->driveshaft_rpm = data;
