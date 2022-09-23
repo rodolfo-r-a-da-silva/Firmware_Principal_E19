@@ -9,6 +9,8 @@
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
+	uint8_t buffer[8];
+
 	if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, rxData) == HAL_OK)
 	{
 		verifyCAN |= 2;
@@ -30,6 +32,16 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 				PDM_CAN_Process_Data(&rxHeader, rxData, &pdmReadings);
 				FT_CAN_ReceiveData(&rxHeader, rxData, &ecuData);
 			}
+		}
+
+		if((rxHeader.IDE == CAN_ID_STD) && (rxHeader.StdId == GPS_FIRST_ID) && (flagRTC == RTC_LOST))
+		{
+			buffer[0] = CAN_COMMAND_RTC;
+
+			for(uint8_t i = 0; i < 7; i++)
+				buffer[i+1] = rxData[i];
+
+			Principal_Receive_Config(&hi2c1, buffer, 7);
 		}
 	}
 

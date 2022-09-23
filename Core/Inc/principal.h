@@ -24,6 +24,7 @@
 #define FIRST_ID		0x515
 #define BEACON_ID		0x5FF
 #define ECU_FIRST_ID	0x01
+#define GPS_FIRST_ID	0x52D
 #define PDM_FIRST_ID	0x0A
 
 //CONFIGURATION

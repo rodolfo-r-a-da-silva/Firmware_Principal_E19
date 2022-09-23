@@ -18,11 +18,11 @@ void Principal_Init(CAN_HandleTypeDef* hcan, I2C_HandleTypeDef* hi2c, TIM_Handle
 //	Load_EEPROM(hi2c);
 
 //	rtcDate.Year = 22;
-//	rtcDate.Month = 07;
-//	rtcDate.Date = 06;
-//	rtcDate.WeekDay = RTC_WEEKDAY_WEDNESDAY;
-//	rtcTime.Hours = 20;
-//	rtcTime.Minutes = 22;
+//	rtcDate.Month = RTC_MONTH_SEPTEMBER;
+//	rtcDate.Date = 23;
+//	rtcDate.WeekDay = RTC_WEEKDAY_FRIDAY;
+//	rtcTime.Hours = 19;
+//	rtcTime.Minutes = 54;
 //	rtcTime.Seconds = 0;
 //	HAL_RTCEx_SetCoarseCalib(&hrtc, RTC_CALIBSIGN_NEGATIVE, 55);
 //	HAL_RTC_SetDate(&hrtc, &rtcDate, RTC_FORMAT_BIN);
