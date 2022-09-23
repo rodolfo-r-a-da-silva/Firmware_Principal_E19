@@ -8821,9 +8821,9 @@ __weak void Principal_Hard_Code_Config(){
  8004280:	4b1f      	ldr	r3, [pc, #124]	; (8004300 <Principal_Hard_Code_Config+0x84>)
  8004282:	220a      	movs	r2, #10
  8004284:	801a      	strh	r2, [r3, #0]
-	perMsg[ANALOG_5_8] = MSG_FREQ_200HZ;
+	perMsg[ANALOG_5_8] = MSG_FREQ_100HZ;
  8004286:	4b1e      	ldr	r3, [pc, #120]	; (8004300 <Principal_Hard_Code_Config+0x84>)
- 8004288:	2205      	movs	r2, #5
+ 8004288:	220a      	movs	r2, #10
  800428a:	805a      	strh	r2, [r3, #2]
 	perMsg[ANALOG_9_12] = MSG_DISABLED;
  800428c:	4b1c      	ldr	r3, [pc, #112]	; (8004300 <Principal_Hard_Code_Config+0x84>)
@@ -11767,57 +11767,57 @@ void Principal_Datalogger_Save_Data(CAN_HandleTypeDef* hcan, uint32_t data_id, u
  8005f62:	4b16      	ldr	r3, [pc, #88]	; (8005fbc <Principal_Datalogger_Save_Data+0x108>)
  8005f64:	681b      	ldr	r3, [r3, #0]
  8005f66:	2b00      	cmp	r3, #0
- 8005f68:	d012      	beq.n	8005f90 <Principal_Datalogger_Save_Data+0xdc>
+ 8005f68:	d013      	beq.n	8005f92 <Principal_Datalogger_Save_Data+0xde>
  8005f6a:	4b12      	ldr	r3, [pc, #72]	; (8005fb4 <Principal_Datalogger_Save_Data+0x100>)
  8005f6c:	685b      	ldr	r3, [r3, #4]
- 8005f6e:	f5b3 7f7a 	cmp.w	r3, #1000	; 0x3e8
- 8005f72:	d90d      	bls.n	8005f90 <Principal_Datalogger_Save_Data+0xdc>
- 8005f74:	7ffb      	ldrb	r3, [r7, #31]
- 8005f76:	2b00      	cmp	r3, #0
- 8005f78:	d10a      	bne.n	8005f90 <Principal_Datalogger_Save_Data+0xdc>
+ 8005f6e:	f640 12c4 	movw	r2, #2500	; 0x9c4
+ 8005f72:	4293      	cmp	r3, r2
+ 8005f74:	d90d      	bls.n	8005f92 <Principal_Datalogger_Save_Data+0xde>
+ 8005f76:	7ffb      	ldrb	r3, [r7, #31]
+ 8005f78:	2b00      	cmp	r3, #0
+ 8005f7a:	d10a      	bne.n	8005f92 <Principal_Datalogger_Save_Data+0xde>
 	{
 		verify = f_sync(&fileStruct);
- 8005f7a:	480f      	ldr	r0, [pc, #60]	; (8005fb8 <Principal_Datalogger_Save_Data+0x104>)
- 8005f7c:	f011 f841 	bl	8017002 <f_sync>
- 8005f80:	4603      	mov	r3, r0
- 8005f82:	77fb      	strb	r3, [r7, #31]
+ 8005f7c:	480e      	ldr	r0, [pc, #56]	; (8005fb8 <Principal_Datalogger_Save_Data+0x104>)
+ 8005f7e:	f011 f840 	bl	8017002 <f_sync>
+ 8005f82:	4603      	mov	r3, r0
+ 8005f84:	77fb      	strb	r3, [r7, #31]
 
 		dataloggerWrite = 0;
- 8005f84:	4b0d      	ldr	r3, [pc, #52]	; (8005fbc <Principal_Datalogger_Save_Data+0x108>)
- 8005f86:	2200      	movs	r2, #0
- 8005f88:	601a      	str	r2, [r3, #0]
+ 8005f86:	4b0d      	ldr	r3, [pc, #52]	; (8005fbc <Principal_Datalogger_Save_Data+0x108>)
+ 8005f88:	2200      	movs	r2, #0
+ 8005f8a:	601a      	str	r2, [r3, #0]
 		accDatalogger[DL_ACC_TIMEOUT] = 0;
- 8005f8a:	4b0a      	ldr	r3, [pc, #40]	; (8005fb4 <Principal_Datalogger_Save_Data+0x100>)
- 8005f8c:	2200      	movs	r2, #0
- 8005f8e:	605a      	str	r2, [r3, #4]
+ 8005f8c:	4b09      	ldr	r3, [pc, #36]	; (8005fb4 <Principal_Datalogger_Save_Data+0x100>)
+ 8005f8e:	2200      	movs	r2, #0
+ 8005f90:	605a      	str	r2, [r3, #4]
 	}
 
 	if(verify != FR_OK)
- 8005f90:	7ffb      	ldrb	r3, [r7, #31]
- 8005f92:	2b00      	cmp	r3, #0
- 8005f94:	d004      	beq.n	8005fa0 <Principal_Datalogger_Save_Data+0xec>
+ 8005f92:	7ffb      	ldrb	r3, [r7, #31]
+ 8005f94:	2b00      	cmp	r3, #0
+ 8005f96:	d004      	beq.n	8005fa2 <Principal_Datalogger_Save_Data+0xee>
 	{
 		flagDatalogger = DL_ERROR;
- 8005f96:	4b0a      	ldr	r3, [pc, #40]	; (8005fc0 <Principal_Datalogger_Save_Data+0x10c>)
- 8005f98:	2204      	movs	r2, #4
- 8005f9a:	701a      	strb	r2, [r3, #0]
+ 8005f98:	4b09      	ldr	r3, [pc, #36]	; (8005fc0 <Principal_Datalogger_Save_Data+0x10c>)
+ 8005f9a:	2204      	movs	r2, #4
+ 8005f9c:	701a      	strb	r2, [r3, #0]
 
 		Principal_Datalogger_Finish();
- 8005f9c:	f7ff ff52 	bl	8005e44 <Principal_Datalogger_Finish>
+ 8005f9e:	f7ff ff51 	bl	8005e44 <Principal_Datalogger_Finish>
 	}
 
 	HAL_NVIC_EnableIRQ(CAN1_RX0_IRQn);
- 8005fa0:	2014      	movs	r0, #20
- 8005fa2:	f002 f9e0 	bl	8008366 <HAL_NVIC_EnableIRQ>
+ 8005fa2:	2014      	movs	r0, #20
+ 8005fa4:	f002 f9df 	bl	8008366 <HAL_NVIC_EnableIRQ>
 
 	return;
- 8005fa6:	bf00      	nop
- 8005fa8:	46d5      	mov	sp, sl
+ 8005fa8:	bf00      	nop
+ 8005faa:	46d5      	mov	sp, sl
 }
- 8005faa:	3720      	adds	r7, #32
- 8005fac:	46bd      	mov	sp, r7
- 8005fae:	e8bd 87f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, pc}
- 8005fb2:	bf00      	nop
+ 8005fac:	3720      	adds	r7, #32
+ 8005fae:	46bd      	mov	sp, r7
+ 8005fb0:	e8bd 87f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, sl, pc}
  8005fb4:	20002680 	.word	0x20002680
  8005fb8:	200014d8 	.word	0x200014d8
  8005fbc:	20002598 	.word	0x20002598
