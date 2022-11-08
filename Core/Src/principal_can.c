@@ -139,14 +139,17 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
 	txHeader.StdId = FIRST_ID + ANALOG_1_4;
 	txHeader.DLC = 8;
 
+	//Cada variavel dentro do adcBuffer corresponde a uma entrada analogica
+	//A entrada que corresponde a adcBuffer[i] é a entrada Analog_i+1 (conferir entradas analogicas no esquematico)
+	//txData é um buffer para envio pela rede CAN e salvamento no datalogger
 	txData[0] = adcBuffer[0] >> 8;
 	txData[1] = adcBuffer[0] & 0xff;
-	txData[2] = adcBuffer[1] >> 8;
-	txData[3] = adcBuffer[1] & 0xff;
-	txData[4] = adcBuffer[2] >> 8;
-	txData[5] = adcBuffer[2] & 0xff;
-	txData[6] = adcBuffer[3] >> 8;
-	txData[7] = adcBuffer[3] & 0xff;
+	txData[2] = adcBuffer[BRAKE_PRES_R] >> 8;
+	txData[3] = adcBuffer[BRAKE_PRES_R] & 0xff;
+	txData[4] = adcBuffer[STEERING_ANG] >> 8;
+	txData[5] = adcBuffer[STEERING_ANG] & 0xff;
+	txData[6] = adcBuffer[BRAKE_PRES_F] >> 8;
+	txData[7] = adcBuffer[BRAKE_PRES_F] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
 #ifdef DATALOGGER_NO_BUFFER
@@ -168,14 +171,14 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
 	txHeader.StdId = FIRST_ID + ANALOG_5_8;
 	txHeader.DLC = 8;
 
-	txData[0] = adcBuffer[4] >> 8;
-	txData[1] = adcBuffer[4] & 0xff;
-	txData[2] = adcBuffer[5] >> 8;
-	txData[3] = adcBuffer[5] & 0xff;
-	txData[4] = adcBuffer[6] >> 8;
-	txData[5] = adcBuffer[6] & 0xff;
-	txData[6] = adcBuffer[7] >> 8;
-	txData[7] = adcBuffer[7] & 0xff;
+	txData[0] = adcBuffer[SUSP_POS_FL] >> 8;
+	txData[1] = adcBuffer[SUSP_POS_FL] & 0xff;
+	txData[2] = adcBuffer[SUSP_POS_FR] >> 8;
+	txData[3] = adcBuffer[SUSP_POS_FR] & 0xff;
+	txData[4] = adcBuffer[SUSP_POS_RL] >> 8;
+	txData[5] = adcBuffer[SUSP_POS_RL] & 0xff;
+	txData[6] = adcBuffer[SUSP_POS_RR] >> 8;
+	txData[7] = adcBuffer[SUSP_POS_RR] & 0xff;
 
 	if(flagDatalogger == DL_SAVE)
 #ifdef DATALOGGER_NO_BUFFER
@@ -235,7 +238,6 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
 	txData[3] = rtcTime.Hours;
 	txData[4] = rtcTime.Minutes;
 	txData[5] = rtcTime.Seconds;
-
 
 	if(flagDatalogger == DL_SAVE)
 #ifdef DATALOGGER_NO_BUFFER

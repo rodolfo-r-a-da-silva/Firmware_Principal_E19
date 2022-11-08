@@ -129,7 +129,7 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 }
 
 __weak void Principal_Hard_Code_Config(){
-	perMsg[ANALOG_1_4] = MSG_FREQ_100HZ;
+	perMsg[ANALOG_1_4] = MSG_FREQ_200HZ;
 	perMsg[ANALOG_5_8] = MSG_FREQ_100HZ;
 	perMsg[ANALOG_9_12] = MSG_DISABLED;
 	perMsg[RTC_MSG] = MSG_FREQ_2HZ;

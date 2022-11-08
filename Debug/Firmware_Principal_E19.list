@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  00030198  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0002ff47  00000000  00000000  000301c8  2**0
+ 12 .debug_info   0002ff56  00000000  00000000  000301c8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 000069fd  00000000  00000000  0006010f  2**0
+ 13 .debug_abbrev 000069b1  00000000  00000000  0006011e  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00002378  00000000  00000000  00066b10  2**3
+ 14 .debug_aranges 00002378  00000000  00000000  00066ad0  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 00002058  00000000  00000000  00068e88  2**3
+ 15 .debug_ranges 00002058  00000000  00000000  00068e48  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  0002ea66  00000000  00000000  0006aee0  2**0
+ 16 .debug_macro  0002ea90  00000000  00000000  0006aea0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00035ce5  00000000  00000000  00099946  2**0
+ 17 .debug_line   000356c5  00000000  00000000  00099930  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000f3f6f  00000000  00000000  000cf62b  2**0
+ 18 .debug_str    000f3ff1  00000000  00000000  000ceff5  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  001c359a  2**0
+ 19 .comment      00000050  00000000  00000000  001c2fe6  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00009724  00000000  00000000  001c35ec  2**2
+ 20 .debug_frame  00009724  00000000  00000000  001c3038  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -5019,6 +5019,9 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
  8002374:	2208      	movs	r2, #8
  8002376:	611a      	str	r2, [r3, #16]
 
+	//Cada variavel dentro do adcBuffer corresponde a uma entrada analogica
+	//A entrada que corresponde a adcBuffer[i] é a entrada Analog_i+1 (conferir entradas analogicas no esquematico)
+	//txData é um buffer para envio pela rede CAN e salvamento no datalogger
 	txData[0] = adcBuffer[0] >> 8;
  8002378:	4b3d      	ldr	r3, [pc, #244]	; (8002470 <Tx_Analog_1_4+0x120>)
  800237a:	881b      	ldrh	r3, [r3, #0]
@@ -5033,7 +5036,7 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
  800238a:	b2da      	uxtb	r2, r3
  800238c:	4b39      	ldr	r3, [pc, #228]	; (8002474 <Tx_Analog_1_4+0x124>)
  800238e:	705a      	strb	r2, [r3, #1]
-	txData[2] = adcBuffer[1] >> 8;
+	txData[2] = adcBuffer[BRAKE_PRES_R] >> 8;
  8002390:	4b37      	ldr	r3, [pc, #220]	; (8002470 <Tx_Analog_1_4+0x120>)
  8002392:	885b      	ldrh	r3, [r3, #2]
  8002394:	0a1b      	lsrs	r3, r3, #8
@@ -5041,13 +5044,13 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
  8002398:	b2da      	uxtb	r2, r3
  800239a:	4b36      	ldr	r3, [pc, #216]	; (8002474 <Tx_Analog_1_4+0x124>)
  800239c:	709a      	strb	r2, [r3, #2]
-	txData[3] = adcBuffer[1] & 0xff;
+	txData[3] = adcBuffer[BRAKE_PRES_R] & 0xff;
  800239e:	4b34      	ldr	r3, [pc, #208]	; (8002470 <Tx_Analog_1_4+0x120>)
  80023a0:	885b      	ldrh	r3, [r3, #2]
  80023a2:	b2da      	uxtb	r2, r3
  80023a4:	4b33      	ldr	r3, [pc, #204]	; (8002474 <Tx_Analog_1_4+0x124>)
  80023a6:	70da      	strb	r2, [r3, #3]
-	txData[4] = adcBuffer[2] >> 8;
+	txData[4] = adcBuffer[STEERING_ANG] >> 8;
  80023a8:	4b31      	ldr	r3, [pc, #196]	; (8002470 <Tx_Analog_1_4+0x120>)
  80023aa:	889b      	ldrh	r3, [r3, #4]
  80023ac:	0a1b      	lsrs	r3, r3, #8
@@ -5055,13 +5058,13 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
  80023b0:	b2da      	uxtb	r2, r3
  80023b2:	4b30      	ldr	r3, [pc, #192]	; (8002474 <Tx_Analog_1_4+0x124>)
  80023b4:	711a      	strb	r2, [r3, #4]
-	txData[5] = adcBuffer[2] & 0xff;
+	txData[5] = adcBuffer[STEERING_ANG] & 0xff;
  80023b6:	4b2e      	ldr	r3, [pc, #184]	; (8002470 <Tx_Analog_1_4+0x120>)
  80023b8:	889b      	ldrh	r3, [r3, #4]
  80023ba:	b2da      	uxtb	r2, r3
  80023bc:	4b2d      	ldr	r3, [pc, #180]	; (8002474 <Tx_Analog_1_4+0x124>)
  80023be:	715a      	strb	r2, [r3, #5]
-	txData[6] = adcBuffer[3] >> 8;
+	txData[6] = adcBuffer[BRAKE_PRES_F] >> 8;
  80023c0:	4b2b      	ldr	r3, [pc, #172]	; (8002470 <Tx_Analog_1_4+0x120>)
  80023c2:	88db      	ldrh	r3, [r3, #6]
  80023c4:	0a1b      	lsrs	r3, r3, #8
@@ -5069,7 +5072,7 @@ static void Tx_Analog_1_4(CAN_HandleTypeDef* hcan)
  80023c8:	b2da      	uxtb	r2, r3
  80023ca:	4b2a      	ldr	r3, [pc, #168]	; (8002474 <Tx_Analog_1_4+0x124>)
  80023cc:	719a      	strb	r2, [r3, #6]
-	txData[7] = adcBuffer[3] & 0xff;
+	txData[7] = adcBuffer[BRAKE_PRES_F] & 0xff;
  80023ce:	4b28      	ldr	r3, [pc, #160]	; (8002470 <Tx_Analog_1_4+0x120>)
  80023d0:	88db      	ldrh	r3, [r3, #6]
  80023d2:	b2da      	uxtb	r2, r3
@@ -5194,7 +5197,7 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
  80024b0:	2208      	movs	r2, #8
  80024b2:	611a      	str	r2, [r3, #16]
 
-	txData[0] = adcBuffer[4] >> 8;
+	txData[0] = adcBuffer[SUSP_POS_FL] >> 8;
  80024b4:	4b3d      	ldr	r3, [pc, #244]	; (80025ac <Tx_Analog_5_8+0x120>)
  80024b6:	891b      	ldrh	r3, [r3, #8]
  80024b8:	0a1b      	lsrs	r3, r3, #8
@@ -5202,13 +5205,13 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
  80024bc:	b2da      	uxtb	r2, r3
  80024be:	4b3c      	ldr	r3, [pc, #240]	; (80025b0 <Tx_Analog_5_8+0x124>)
  80024c0:	701a      	strb	r2, [r3, #0]
-	txData[1] = adcBuffer[4] & 0xff;
+	txData[1] = adcBuffer[SUSP_POS_FL] & 0xff;
  80024c2:	4b3a      	ldr	r3, [pc, #232]	; (80025ac <Tx_Analog_5_8+0x120>)
  80024c4:	891b      	ldrh	r3, [r3, #8]
  80024c6:	b2da      	uxtb	r2, r3
  80024c8:	4b39      	ldr	r3, [pc, #228]	; (80025b0 <Tx_Analog_5_8+0x124>)
  80024ca:	705a      	strb	r2, [r3, #1]
-	txData[2] = adcBuffer[5] >> 8;
+	txData[2] = adcBuffer[SUSP_POS_FR] >> 8;
  80024cc:	4b37      	ldr	r3, [pc, #220]	; (80025ac <Tx_Analog_5_8+0x120>)
  80024ce:	895b      	ldrh	r3, [r3, #10]
  80024d0:	0a1b      	lsrs	r3, r3, #8
@@ -5216,13 +5219,13 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
  80024d4:	b2da      	uxtb	r2, r3
  80024d6:	4b36      	ldr	r3, [pc, #216]	; (80025b0 <Tx_Analog_5_8+0x124>)
  80024d8:	709a      	strb	r2, [r3, #2]
-	txData[3] = adcBuffer[5] & 0xff;
+	txData[3] = adcBuffer[SUSP_POS_FR] & 0xff;
  80024da:	4b34      	ldr	r3, [pc, #208]	; (80025ac <Tx_Analog_5_8+0x120>)
  80024dc:	895b      	ldrh	r3, [r3, #10]
  80024de:	b2da      	uxtb	r2, r3
  80024e0:	4b33      	ldr	r3, [pc, #204]	; (80025b0 <Tx_Analog_5_8+0x124>)
  80024e2:	70da      	strb	r2, [r3, #3]
-	txData[4] = adcBuffer[6] >> 8;
+	txData[4] = adcBuffer[SUSP_POS_RL] >> 8;
  80024e4:	4b31      	ldr	r3, [pc, #196]	; (80025ac <Tx_Analog_5_8+0x120>)
  80024e6:	899b      	ldrh	r3, [r3, #12]
  80024e8:	0a1b      	lsrs	r3, r3, #8
@@ -5230,13 +5233,13 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
  80024ec:	b2da      	uxtb	r2, r3
  80024ee:	4b30      	ldr	r3, [pc, #192]	; (80025b0 <Tx_Analog_5_8+0x124>)
  80024f0:	711a      	strb	r2, [r3, #4]
-	txData[5] = adcBuffer[6] & 0xff;
+	txData[5] = adcBuffer[SUSP_POS_RL] & 0xff;
  80024f2:	4b2e      	ldr	r3, [pc, #184]	; (80025ac <Tx_Analog_5_8+0x120>)
  80024f4:	899b      	ldrh	r3, [r3, #12]
  80024f6:	b2da      	uxtb	r2, r3
  80024f8:	4b2d      	ldr	r3, [pc, #180]	; (80025b0 <Tx_Analog_5_8+0x124>)
  80024fa:	715a      	strb	r2, [r3, #5]
-	txData[6] = adcBuffer[7] >> 8;
+	txData[6] = adcBuffer[SUSP_POS_RR] >> 8;
  80024fc:	4b2b      	ldr	r3, [pc, #172]	; (80025ac <Tx_Analog_5_8+0x120>)
  80024fe:	89db      	ldrh	r3, [r3, #14]
  8002500:	0a1b      	lsrs	r3, r3, #8
@@ -5244,7 +5247,7 @@ static void Tx_Analog_5_8(CAN_HandleTypeDef* hcan)
  8002504:	b2da      	uxtb	r2, r3
  8002506:	4b2a      	ldr	r3, [pc, #168]	; (80025b0 <Tx_Analog_5_8+0x124>)
  8002508:	719a      	strb	r2, [r3, #6]
-	txData[7] = adcBuffer[7] & 0xff;
+	txData[7] = adcBuffer[SUSP_POS_RR] & 0xff;
  800250a:	4b28      	ldr	r3, [pc, #160]	; (80025ac <Tx_Analog_5_8+0x120>)
  800250c:	89db      	ldrh	r3, [r3, #14]
  800250e:	b2da      	uxtb	r2, r3
@@ -5585,7 +5588,6 @@ static void Tx_RTC(CAN_HandleTypeDef* hcan)
  800276a:	789a      	ldrb	r2, [r3, #2]
  800276c:	4b29      	ldr	r3, [pc, #164]	; (8002814 <Tx_RTC+0x110>)
  800276e:	715a      	strb	r2, [r3, #5]
-
 
 	if(flagDatalogger == DL_SAVE)
  8002770:	4b29      	ldr	r3, [pc, #164]	; (8002818 <Tx_RTC+0x114>)
@@ -8817,9 +8819,9 @@ HAL_StatusTypeDef Principal_Receive_Config(I2C_HandleTypeDef* hi2c, uint8_t* dat
 __weak void Principal_Hard_Code_Config(){
  800427c:	b580      	push	{r7, lr}
  800427e:	af00      	add	r7, sp, #0
-	perMsg[ANALOG_1_4] = MSG_FREQ_100HZ;
+	perMsg[ANALOG_1_4] = MSG_FREQ_200HZ;
  8004280:	4b1f      	ldr	r3, [pc, #124]	; (8004300 <Principal_Hard_Code_Config+0x84>)
- 8004282:	220a      	movs	r2, #10
+ 8004282:	2205      	movs	r2, #5
  8004284:	801a      	strh	r2, [r3, #0]
 	perMsg[ANALOG_5_8] = MSG_FREQ_100HZ;
  8004286:	4b1e      	ldr	r3, [pc, #120]	; (8004300 <Principal_Hard_Code_Config+0x84>)

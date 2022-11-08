@@ -2,7 +2,7 @@
  * principal.h
  *
  *  Created on: 29 de dez de 2021
- *      Author: Rodolfp
+ *      Author: Rodolfo
  */
 
 #ifndef INC_PRINCIPAL_H_
@@ -15,6 +15,15 @@
 #include "pdm_can.h"
 
 /*BEGIN DEFINES*/
+//Defines para indicar onde cada sensor esta no adcBuffer
+#define BRAKE_PRES_F	3
+#define BRAKE_PRES_R	1
+#define STEERING_ANG	2
+#define SUSP_POS_FL		4
+#define SUSP_POS_FR		5
+#define SUSP_POS_RL		6
+#define SUSP_POS_RR		7
+
 //CAN
 #define CAN_CFG_FILTER	0x1E300000
 #define CAN_CFG_MASK	0x1FF80000
