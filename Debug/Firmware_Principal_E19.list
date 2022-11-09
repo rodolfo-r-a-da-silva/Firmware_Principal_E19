@@ -37,13 +37,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  0002ea90  00000000  00000000  0006aea0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   000356c5  00000000  00000000  00099930  2**0
+ 17 .debug_line   000355e5  00000000  00000000  00099930  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000f3ff1  00000000  00000000  000ceff5  2**0
+ 18 .debug_str    000f3fea  00000000  00000000  000cef15  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  001c2fe6  2**0
+ 19 .comment      00000050  00000000  00000000  001c2eff  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00009724  00000000  00000000  001c3038  2**2
+ 20 .debug_frame  00009724  00000000  00000000  001c2f50  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -506,88 +506,87 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
  8000636:	0cdb      	lsrs	r3, r3, #19
  8000638:	61bb      	str	r3, [r7, #24]
 
-	if(	   (ExtId != FT_Gear_Controller)
+	if(	  ((ExtId != FT_Gear_Controller)
  800063a:	69bb      	ldr	r3, [r7, #24]
  800063c:	f5b3 7fa0 	cmp.w	r3, #320	; 0x140
- 8000640:	d031      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 8000640:	d02d      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FT_Knock_Meter)
  8000642:	69bb      	ldr	r3, [r7, #24]
  8000644:	f240 1241 	movw	r2, #321	; 0x141
  8000648:	4293      	cmp	r3, r2
- 800064a:	d02c      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 800064a:	d028      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FT_Boost_Controller2)
  800064c:	69bb      	ldr	r3, [r7, #24]
  800064e:	f5b3 7fa1 	cmp.w	r3, #322	; 0x142
- 8000652:	d028      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 8000652:	d024      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FT_Injector_Driver)
  8000654:	69bb      	ldr	r3, [r7, #24]
  8000656:	f5b3 7fa8 	cmp.w	r3, #336	; 0x150
- 800065a:	d024      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 800065a:	d020      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FT_WBO2_Nano)
  800065c:	69bb      	ldr	r3, [r7, #24]
  800065e:	f5b3 7f10 	cmp.w	r3, #576	; 0x240
- 8000662:	d020      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 8000662:	d01c      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FT_WBO2_Slim)
  8000664:	69bb      	ldr	r3, [r7, #24]
  8000666:	f240 2241 	movw	r2, #577	; 0x241
  800066a:	4293      	cmp	r3, r2
- 800066c:	d01b      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 800066c:	d017      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FT_Alcohol_O2)
  800066e:	69bb      	ldr	r3, [r7, #24]
  8000670:	f240 2242 	movw	r2, #578	; 0x242
  8000674:	4293      	cmp	r3, r2
- 8000676:	d016      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 8000676:	d012      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FTSpark)
  8000678:	69bb      	ldr	r3, [r7, #24]
  800067a:	f240 2243 	movw	r2, #579	; 0x243
  800067e:	4293      	cmp	r3, r2
- 8000680:	d011      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 8000680:	d00d      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FT_Switchpad)
  8000682:	69bb      	ldr	r3, [r7, #24]
  8000684:	f5b3 7f11 	cmp.w	r3, #580	; 0x244
- 8000688:	d00d      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
+ 8000688:	d009      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
 		&& (ExtId != FT500)
  800068a:	69bb      	ldr	r3, [r7, #24]
  800068c:	f5b3 7f20 	cmp.w	r3, #640	; 0x280
- 8000690:	d009      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
-		&& (ExtId != FT_Power_ECU)
+ 8000690:	d005      	beq.n	800069e <FT_CAN_ReceiveData+0x7e>
+		&& (ExtId != FT_Power_ECU))
  8000692:	69bb      	ldr	r3, [r7, #24]
  8000694:	f240 2281 	movw	r2, #641	; 0x281
  8000698:	4293      	cmp	r3, r2
- 800069a:	d004      	beq.n	80006a6 <FT_CAN_ReceiveData+0x86>
-		&& (pRxHeader->IDE != CAN_ID_EXT))
- 800069c:	68fb      	ldr	r3, [r7, #12]
- 800069e:	689b      	ldr	r3, [r3, #8]
- 80006a0:	2b04      	cmp	r3, #4
- 80006a2:	f040 83c4 	bne.w	8000e2e <FT_CAN_ReceiveData+0x80e>
+ 800069a:	f040 83c8 	bne.w	8000e2e <FT_CAN_ReceiveData+0x80e>
+		|| (pRxHeader->IDE != CAN_ID_EXT))
+ 800069e:	68fb      	ldr	r3, [r7, #12]
+ 80006a0:	689b      	ldr	r3, [r3, #8]
+ 80006a2:	2b04      	cmp	r3, #4
+ 80006a4:	f040 83c3 	bne.w	8000e2e <FT_CAN_ReceiveData+0x80e>
 		return;
 
 	ExtId = pRxHeader->ExtId;
- 80006a6:	68fb      	ldr	r3, [r7, #12]
- 80006a8:	685b      	ldr	r3, [r3, #4]
- 80006aa:	61bb      	str	r3, [r7, #24]
+ 80006a8:	68fb      	ldr	r3, [r7, #12]
+ 80006aa:	685b      	ldr	r3, [r3, #4]
+ 80006ac:	61bb      	str	r3, [r7, #24]
 
-	for(uint8_t i = 0; i < DLC; i++)
- 80006ac:	2300      	movs	r3, #0
- 80006ae:	77fb      	strb	r3, [r7, #31]
- 80006b0:	e00b      	b.n	80006ca <FT_CAN_ReceiveData+0xaa>
+	for(uint8_t i = 0; i < 8; i++)
+ 80006ae:	2300      	movs	r3, #0
+ 80006b0:	77fb      	strb	r3, [r7, #31]
+ 80006b2:	e00b      	b.n	80006cc <FT_CAN_ReceiveData+0xac>
 		buffer[i] = pData[i];
- 80006b2:	7ffb      	ldrb	r3, [r7, #31]
- 80006b4:	68ba      	ldr	r2, [r7, #8]
- 80006b6:	441a      	add	r2, r3
- 80006b8:	7ffb      	ldrb	r3, [r7, #31]
- 80006ba:	7812      	ldrb	r2, [r2, #0]
- 80006bc:	3320      	adds	r3, #32
- 80006be:	443b      	add	r3, r7
- 80006c0:	f803 2c10 	strb.w	r2, [r3, #-16]
-	for(uint8_t i = 0; i < DLC; i++)
- 80006c4:	7ffb      	ldrb	r3, [r7, #31]
- 80006c6:	3301      	adds	r3, #1
- 80006c8:	77fb      	strb	r3, [r7, #31]
- 80006ca:	7ffa      	ldrb	r2, [r7, #31]
- 80006cc:	7fbb      	ldrb	r3, [r7, #30]
- 80006ce:	429a      	cmp	r2, r3
- 80006d0:	d3ef      	bcc.n	80006b2 <FT_CAN_ReceiveData+0x92>
+ 80006b4:	7ffb      	ldrb	r3, [r7, #31]
+ 80006b6:	68ba      	ldr	r2, [r7, #8]
+ 80006b8:	441a      	add	r2, r3
+ 80006ba:	7ffb      	ldrb	r3, [r7, #31]
+ 80006bc:	7812      	ldrb	r2, [r2, #0]
+ 80006be:	3320      	adds	r3, #32
+ 80006c0:	443b      	add	r3, r7
+ 80006c2:	f803 2c10 	strb.w	r2, [r3, #-16]
+	for(uint8_t i = 0; i < 8; i++)
+ 80006c6:	7ffb      	ldrb	r3, [r7, #31]
+ 80006c8:	3301      	adds	r3, #1
+ 80006ca:	77fb      	strb	r3, [r7, #31]
+ 80006cc:	7ffb      	ldrb	r3, [r7, #31]
+ 80006ce:	2b07      	cmp	r3, #7
+ 80006d0:	d9f0      	bls.n	80006b4 <FT_CAN_ReceiveData+0x94>
 
 	if((((ExtId / 0x800) & 0x07) == 0x00))// || (((ExtId / 0x800) & 0x07) == 0x01))
  80006d2:	69bb      	ldr	r3, [r7, #24]
@@ -890,13 +889,13 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
  800091c:	4293      	cmp	r3, r2
  800091e:	d138      	bne.n	8000992 <FT_CAN_ReceiveData+0x372>
 		{
-			FT_Data_Struct->accel_long		 = buffer[0] << 8;
+			FT_Data_Struct->accel_long	 = buffer[0] << 8;
  8000920:	7c3b      	ldrb	r3, [r7, #16]
  8000922:	021b      	lsls	r3, r3, #8
  8000924:	b21a      	sxth	r2, r3
  8000926:	687b      	ldr	r3, [r7, #4]
  8000928:	869a      	strh	r2, [r3, #52]	; 0x34
-			FT_Data_Struct->accel_long		|= buffer[1];
+			FT_Data_Struct->accel_long	|= buffer[1];
  800092a:	687b      	ldr	r3, [r7, #4]
  800092c:	f9b3 2034 	ldrsh.w	r2, [r3, #52]	; 0x34
  8000930:	7c7b      	ldrb	r3, [r7, #17]
@@ -905,13 +904,13 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
  8000936:	b21a      	sxth	r2, r3
  8000938:	687b      	ldr	r3, [r7, #4]
  800093a:	869a      	strh	r2, [r3, #52]	; 0x34
-			FT_Data_Struct->accel_lat		 = buffer[2] << 8;
+			FT_Data_Struct->accel_lat	 = buffer[2] << 8;
  800093c:	7cbb      	ldrb	r3, [r7, #18]
  800093e:	021b      	lsls	r3, r3, #8
  8000940:	b21a      	sxth	r2, r3
  8000942:	687b      	ldr	r3, [r7, #4]
  8000944:	865a      	strh	r2, [r3, #50]	; 0x32
-			FT_Data_Struct->accel_lat		|= buffer[3];
+			FT_Data_Struct->accel_lat	|= buffer[3];
  8000946:	687b      	ldr	r3, [r7, #4]
  8000948:	f9b3 2032 	ldrsh.w	r2, [r3, #50]	; 0x32
  800094c:	7cfb      	ldrb	r3, [r7, #19]

@@ -34,7 +34,7 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
 	uint8_t DLC = pRxHeader->DLC;
 	uint32_t ExtId = pRxHeader->ExtId >> 19;
 
-	if(	   (ExtId != FT_Gear_Controller)
+	if(	  ((ExtId != FT_Gear_Controller)
 		&& (ExtId != FT_Knock_Meter)
 		&& (ExtId != FT_Boost_Controller2)
 		&& (ExtId != FT_Injector_Driver)
@@ -44,13 +44,13 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
 		&& (ExtId != FTSpark)
 		&& (ExtId != FT_Switchpad)
 		&& (ExtId != FT500)
-		&& (ExtId != FT_Power_ECU)
-		&& (pRxHeader->IDE != CAN_ID_EXT))
+		&& (ExtId != FT_Power_ECU))
+		|| (pRxHeader->IDE != CAN_ID_EXT))
 		return;
 
 	ExtId = pRxHeader->ExtId;
 
-	for(uint8_t i = 0; i < DLC; i++)
+	for(uint8_t i = 0; i < 8; i++)
 		buffer[i] = pData[i];
 
 	if((((ExtId / 0x800) & 0x07) == 0x00))// || (((ExtId / 0x800) & 0x07) == 0x01))
@@ -113,10 +113,10 @@ void FT_CAN_ReceiveData(CAN_RxHeaderTypeDef* pRxHeader, uint8_t* pData, FT_Data*
 
 		else if((ExtId & 0xFFF) == 0x606)
 		{
-			FT_Data_Struct->accel_long		 = buffer[0] << 8;
-			FT_Data_Struct->accel_long		|= buffer[1];
-			FT_Data_Struct->accel_lat		 = buffer[2] << 8;
-			FT_Data_Struct->accel_lat		|= buffer[3];
+			FT_Data_Struct->accel_long	 = buffer[0] << 8;
+			FT_Data_Struct->accel_long	|= buffer[1];
+			FT_Data_Struct->accel_lat	 = buffer[2] << 8;
+			FT_Data_Struct->accel_lat	|= buffer[3];
 			FT_Data_Struct->angle_pitch	 = buffer[4] << 8;
 			FT_Data_Struct->angle_pitch	|= buffer[5];
 			FT_Data_Struct->angle_roll	 = buffer[6] << 8;

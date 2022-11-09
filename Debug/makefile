@@ -68,8 +68,8 @@ all: main-build
 main-build: Firmware_Principal_E19.elf secondary-outputs
 
 # Tool invocations
-Firmware_Principal_E19.elf Firmware_Principal_E19.map: $(OBJS) $(USER_OBJS) C:\Users\Formula-EESC\Documents\GitHub\Firmware_Principal_E19\STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Firmware_Principal_E19.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Formula-EESC\Documents\GitHub\Firmware_Principal_E19\STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware_Principal_E19.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Firmware_Principal_E19.elf Firmware_Principal_E19.map: $(OBJS) $(USER_OBJS) C:\Users\rodol\Documents\GitHub\Firmware_Principal_E19\STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Firmware_Principal_E19.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\rodol\Documents\GitHub\Firmware_Principal_E19\STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Firmware_Principal_E19.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
