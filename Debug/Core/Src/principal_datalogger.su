@@ -2,7 +2,7 @@
 ../Core/Src/principal_datalogger.c:54:9:Principal_Datalogger_Start	56	static
 ../Core/Src/principal_datalogger.c:146:9:Principal_Datalogger_Finish	16	static
 ../Core/Src/principal_datalogger.c:173:6:Principal_Datalogger_Save_Data	64	dynamic
-../Core/Src/principal_datalogger.c:211:6:Principal_Datalogger_Save_Buffer	72	dynamic
-../Core/Src/principal_datalogger.c:277:6:Principal_Datalogger_Button	8	static
-../Core/Src/principal_datalogger.c:291:6:Principal_Card_Detection	16	static
-../Core/Src/principal_datalogger.c:303:6:Principal_Beacon_Detect	8	static
+../Core/Src/principal_datalogger.c:212:6:Principal_Datalogger_Save_Buffer	72	dynamic
+../Core/Src/principal_datalogger.c:278:6:Principal_Datalogger_Button	8	static
+../Core/Src/principal_datalogger.c:292:6:Principal_Card_Detection	16	static
+../Core/Src/principal_datalogger.c:304:6:Principal_Beacon_Detect	8	static

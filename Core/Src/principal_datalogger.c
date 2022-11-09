@@ -184,9 +184,10 @@ void Principal_Datalogger_Save_Data(CAN_HandleTypeDef* hcan, uint32_t data_id, u
 	buffer[3] = data_length;
 	buffer[4] = accDatalogger[DL_ACC_TIMING];
 
-	verify = f_write(&fileStruct, buffer, sizeof(buffer), &writeSize);
-
+	accDatalogger[DL_ACC_TIMING] = 0;
 	dataloggerWrite++;
+
+	verify = f_write(&fileStruct, buffer, sizeof(buffer), &writeSize);
 
 	if((dataloggerWrite > 0) && (accDatalogger[DL_ACC_TIMEOUT] > DATALOGGER_SAVE_TIME_THR) && (verify == FR_OK))
 	{
